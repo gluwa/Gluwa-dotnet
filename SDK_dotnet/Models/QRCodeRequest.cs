@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SDK_dotnet.Models
+namespace Gluwa.Models
 {
     internal sealed class QRCodeRequest
     {

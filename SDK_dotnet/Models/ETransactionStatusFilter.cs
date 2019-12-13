@@ -1,4 +1,4 @@
-﻿namespace SDK_dotnet.Models
+﻿namespace Gluwa.Models
 {
     public enum ETransactionStatusFilter
     {

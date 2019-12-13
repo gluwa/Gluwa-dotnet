@@ -1,22 +1,34 @@
 ﻿using Nethereum.Util;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using System.Numerics;
 
-namespace SDK_dotnet.Utils
+namespace Gluwa.Utils
 {
     internal static class Converter
     {
         public static JsonSerializerSettings Settings { get; private set; }
 
+        static Converter()
+        {
+            Settings = new JsonSerializerSettings();
+            ConfigureSettings(Settings);
+        }
+
+        public static void ConfigureSettings(JsonSerializerSettings settings)
+        {
+            settings.NullValueHandling = NullValueHandling.Ignore;
+            settings.DateParseHandling = DateParseHandling.DateTimeOffset;
+            settings.DateTimeZoneHandling = DateTimeZoneHandling.Utc;
+            settings.ContractResolver = new DefaultContractResolver();  // Pascal Casing
+
+            settings.Converters.Add(new StringEnumConverter());
+        }
+
         public static string ToJson<T>(this T obj)
         {
             return JsonConvert.SerializeObject(obj, Settings);
-        }
-
-        public static BigInteger ConvertToGluwacoinBigInteger(string amount)
-        {
-            BigDecimal bigDecimalAmount = BigDecimal.Parse(amount);
-            return BigInteger.Parse((bigDecimalAmount * new BigDecimal(1, 18)).Floor().ToString());
         }
     }
 }
