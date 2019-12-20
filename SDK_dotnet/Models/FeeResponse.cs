@@ -5,7 +5,7 @@ namespace Gluwa.Models
     public sealed class FeeResponse
     {
         /// <summary>
-        /// Currency that the fee is for.
+        /// Currency of the fee.
         /// </summary>
         [Required]
         public ECurrency? Currency { get; set; }

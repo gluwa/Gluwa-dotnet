@@ -51,17 +51,17 @@ namespace Gluwa.Models
         public string Note { get; set; }
 
         /// <summary>
-        /// Current status of the transaction being processed.
+        /// Status of the transaction.
         /// </summary>
         public ETransactionStatus? Status { get; set; }
 
         /// <summary>
-        /// Time when the transaction was created.
+        /// DateTime when the transaction was created.
         /// </summary>
         public DateTime? CreatedDateTime { get; set; }
 
         /// <summary>
-        /// Time when the transaction was last updated.
+        /// DateTime when the transaction was last updated.
         /// </summary>
         public DateTime? ModifiedDateTime { get; set; }
     }

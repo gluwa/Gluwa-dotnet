@@ -5,7 +5,7 @@ namespace Gluwa.Models
     public sealed class BalanceResponse
     {
         /// <summary>
-        /// Address balance.
+        /// The balance.
         /// </summary>
         public string Balance { get; set; }
 
