@@ -1,25 +1,20 @@
-﻿using Nethereum.ABI;
-using Nethereum.Signer;
+﻿using Gluwa.Error;
 using Gluwa.Models;
 using Gluwa.Utils;
+using Nethereum.ABI;
+using Nethereum.Signer;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Net.Http;
 using System.Numerics;
-using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
-using Gluwa.Error;
 
 namespace Gluwa.Clients
 {
     /// <summary>
-    /// GluwaClient is enable developers to easily make requests to the Gluwa APIs.
-    /// You can get a balance for address and currency.
-    /// You can retrieve a transaction or a list of transactions associated with the user's address. 
-    /// also can create a transaction to be sent from the user's address.
+    /// Client for public APIs
     /// </summary>
     public sealed class GluwaClient
     {
@@ -29,11 +24,11 @@ namespace Gluwa.Clients
         private readonly string mBaseUrl;
 
         /// <summary>
-        /// GluwaClient that need address and private key and sandbox mode.
+        /// The constructor
         /// </summary>
-        /// <param name="address">Your Ethereum Address.</param>
-        /// <param name="privateKey">Your Ethereum Private Key.</param>
-        /// <param name="bSandbox">"true" if you want to use the sandbox mode.</param>
+        /// <param name="address">Your Gluwacoin public Address.</param>
+        /// <param name="privateKey">Your Gluwacoin Private Key.</param>
+        /// <param name="bSandbox">Set to 'true' if using sandbox mode. Otherwise, 'false'</param>
         public GluwaClient(
             string address,
             string privateKey,
@@ -63,7 +58,7 @@ namespace Gluwa.Clients
         }
 
         /// <summary>
-        /// Get balance for specified address and currency.
+        /// Get balance for specified currency.
         /// </summary>
         /// <param name="currency">Currency type.</param>
         /// <response code="200">Balance and associated currency.</response>
@@ -101,14 +96,14 @@ namespace Gluwa.Clients
         }
 
         /// <summary>
-        /// Get a list of transactions by address.
+        /// Get a list of transactions for specified currency.
         /// </summary>
         /// <param name="currency">Currency type.</param>
         /// <param name="limit">Number of transactions to include in the result. optional. Defaults to 100.</param> 
-        /// <param name="status">Filter by transaction status. optional. Defaults to Confimred.</param>
-        /// <param name="offset">Number of transactions to skip; used for pagination. optional. Default to 0.</param>
+        /// <param name="status">Filter by transaction status. Optional. Defaults to Confimred.</param>
+        /// <param name="offset">Number of transactions to skip; used for pagination. Optional. Default to 0.</param>
         /// <response code="200">List of transactions associated with the address.</response>
-        /// <response code="400">Invalid request. or Address does not have a valid format.</response>
+        /// <response code="400">Invalid request or Address does not have a valid format.</response>
         /// <response code="403">Request signature header is not valid.</response>
         /// <response code="500">Server error.</response>
         /// <response code="503">Service unavailable.</response>
@@ -219,10 +214,10 @@ namespace Gluwa.Clients
         /// </summary>
         /// <param name="currency">Currency type</param>
         /// <param name="amount">Transaction amount, not including the fee.</param>
-        /// <param name="target">Address that the transaction will be sent to.</param>
-        /// <param name="merchantOrderID">Identifier for the transaction that was provided by the merchant user. optional.</param>
-        /// <param name="note">Additional information about the transaction that a user can provide. optional.</param>
-        /// <param name="expiry">Expiry of the Transfer Request. optional.</param>
+        /// <param name="target">The address that the transaction will be sent to.</param>
+        /// <param name="merchantOrderID">Identifier for the transaction that was provided by the merchant user. Optional.</param>
+        /// <param name="note">Additional information about the transaction that a user can provide. Optional.</param>
+        /// <param name="expiry">Expiry of the Transfer Request. Optional.</param>
         /// <response code="202">Newly accepted transaction.</response>
         /// <response code="400">Invalid request. or Validation error. See inner errors for more details. or (BTC only) Signed BTC transaction could not be verified.</response>
         /// <response code="403">For payments, payment signature could not be verified.</response>

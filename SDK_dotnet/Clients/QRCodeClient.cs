@@ -4,7 +4,6 @@ using Gluwa.Utils;
 using Nethereum.Signer;
 using System;
 using System.Collections.Generic;
-using System.Net;
 using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
@@ -12,7 +11,7 @@ using System.Threading.Tasks;
 namespace Gluwa.Clients
 {
     /// <summary>
-    /// QRCodeClient generates QR code images that can be used to make payment transactions.
+    /// QRCodeClient generates payment QR code image.
     /// </summary>
     public sealed class QRCodeClient
     {
@@ -24,13 +23,13 @@ namespace Gluwa.Clients
         private readonly bool mbSandbox;
 
         /// <summary>
-        /// QRCodeClient that need api key and secret. also need address, privatekey and sandbox mode.
+        /// The constructor.
         /// </summary>
         /// <param name="apiKey">Your API Key.</param>
         /// <param name="secret">Your API Secret.</param>
-        /// <param name="address">Your Ethereum Address.</param>
-        /// <param name="privateKey">Your Ethereum Private Key.</param>
-        /// <param name="bSandbox">"true" if you want to use the sandbox mode.</param>
+        /// <param name="address">Your public address.</param>
+        /// <param name="privateKey">Your private Key.</param>
+        /// <param name="bSandbox">Set to 'true' if using sandbox mode. Otherwise, 'false'</param>
         public QRCodeClient(
             string apiKey,
             string secret,
