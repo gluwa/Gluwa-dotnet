@@ -1,6 +1,5 @@
 ﻿using Gluwa.Models;
 using Gluwa.Utils;
-using Newtonsoft.Json;
 using System;
 using System.Security.Cryptography;
 using System.Text;
@@ -8,29 +7,28 @@ using System.Text;
 namespace Gluwa
 {
     /// <summary>
-    /// When user completes transfer, the Gluwa API sends a webhook to your webhook endpoint.
-    /// Verify that the values ​​actually sent by the Gluwa server are correct.
+    /// Verify that the webhook is sent by the Gluwa.
     /// </summary>
     public sealed class Webhook
     {
         private readonly string mWebhookSecretKey;
 
         /// <summary>
-        /// Constructor
+        /// The constructor
         /// </summary>
-        public Webhook()
-        {       
+        /// <param name="webhookSecretKey">Your Webhook Secret.</param>
+        public Webhook(string webhookSecretKey)
+        {
+            mWebhookSecretKey = webhookSecretKey;
         }
 
         /// <summary>
         /// Verify the requested Signature and Payload
         /// </summary>
-        /// <param name="payLoad">request body</param>
-        /// <param name="signature">x-request-signature</param>
-        /// <param name="webhookSecretKey">Your Webhook Secret.</param>
-        public bool ValidateWebhook(PayLoad payLoad, string signature, string webhookSecretKey)
+        /// <param name="payLoad">Payload</param>
+        /// <param name="signature">The value of X-REQUEST-SIGNATURE</param>
+        public bool ValidateWebhook(PayLoad payLoad, string signature)
         {
-            Converter.Settings.NullValueHandling = NullValueHandling.Include;
             string payload = Converter.ToJson<PayLoad>(payLoad);
 
             if (string.IsNullOrWhiteSpace(payload))
@@ -43,12 +41,12 @@ namespace Gluwa
             }
 
             string payloadHashBase64;
-            byte[] key = Encoding.UTF8.GetBytes(webhookSecretKey);
+            byte[] key = Encoding.UTF8.GetBytes(mWebhookSecretKey);
             using (var encryptor = new HMACSHA256(key))
             {
                 byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
                 byte[] payloadHashedBytes = encryptor.ComputeHash(payloadBytes);
-                payloadHashBase64 = System.Convert.ToBase64String(payloadHashedBytes);
+                payloadHashBase64 = Convert.ToBase64String(payloadHashedBytes);
             }
 
             return payloadHashBase64 == signature;
