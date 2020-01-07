@@ -1,5 +1,6 @@
 ﻿using Gluwa.Models;
 using Gluwa.Utils;
+using Newtonsoft.Json;
 using System;
 using System.Security.Cryptography;
 using System.Text;
@@ -11,15 +12,11 @@ namespace Gluwa
     /// </summary>
     public sealed class Webhook
     {
-        private readonly string mWebhookSecretKey;
-
         /// <summary>
         /// The constructor
         /// </summary>
-        /// <param name="webhookSecretKey">Your Webhook Secret.</param>
-        public Webhook(string webhookSecretKey)
-        {
-            mWebhookSecretKey = webhookSecretKey;
+        public Webhook()
+        {    
         }
 
         /// <summary>
@@ -27,8 +24,10 @@ namespace Gluwa
         /// </summary>
         /// <param name="payLoad">Payload</param>
         /// <param name="signature">The value of X-REQUEST-SIGNATURE</param>
-        public bool ValidateWebhook(PayLoad payLoad, string signature)
+        /// <param name="webhookSecretKey">Your Webhook Secret.</param>
+        public bool ValidateWebhook(PayLoad payLoad, string signature, string webhookSecretKey)
         {
+            Converter.Settings.NullValueHandling = NullValueHandling.Include;
             string payload = Converter.ToJson<PayLoad>(payLoad);
 
             if (string.IsNullOrWhiteSpace(payload))
@@ -41,7 +40,7 @@ namespace Gluwa
             }
 
             string payloadHashBase64;
-            byte[] key = Encoding.UTF8.GetBytes(mWebhookSecretKey);
+            byte[] key = Encoding.UTF8.GetBytes(webhookSecretKey);
             using (var encryptor = new HMACSHA256(key))
             {
                 byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);

@@ -19,32 +19,15 @@ namespace Gluwa.Clients
     public sealed class GluwaClient
     {
         private readonly bool mbSandbox;
-        private readonly string mAddress;
-        private readonly string mPrivateKey;
         private readonly string mBaseUrl;
 
         /// <summary>
         /// The constructor
         /// </summary>
-        /// <param name="address">Your Gluwacoin public Address.</param>
-        /// <param name="privateKey">Your Gluwacoin Private Key.</param>
         /// <param name="bSandbox">Set to 'true' if using sandbox mode. Otherwise, 'false'</param>
         public GluwaClient(
-            string address,
-            string privateKey,
-            bool bSandbox)
+            bool bSandbox = false)
         {
-            if (string.IsNullOrWhiteSpace(address))
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-            else if (string.IsNullOrWhiteSpace(privateKey))
-            {
-                throw new ArgumentNullException(nameof(privateKey));
-            }
-
-            mAddress = address;
-            mPrivateKey = privateKey;
             mbSandbox = bSandbox;
 
             if (mbSandbox)
@@ -61,44 +44,54 @@ namespace Gluwa.Clients
         /// Get balance for specified currency.
         /// </summary>
         /// <param name="currency">Currency type.</param>
+        /// <param name="address">Your Gluwacoin public Address.</param>
         /// <response code="200">Balance and associated currency.</response>
         /// <response code="400">Invalid address format.</response>
         /// <response code="500">Server error.</response>
         /// <response code="503">Service unavailable for the specified currency or temporarily.</response>
-        public async Task<Result<BalanceResponse, PublicError>> GetBalanceAsync(ECurrency currency)
+        public async Task<Result<BalanceResponse, ErrorResponse>> GetBalanceAsync(ECurrency currency, string address)
         {
-            var result = new Result<BalanceResponse, PublicError>();
-            string requestUri = $"{mBaseUrl}/v1/{currency}/Addressesa/{mAddress}";
-
-            using (HttpClient httpClient = new HttpClient())
-            using (HttpResponseMessage message = await httpClient.GetAsync(requestUri))
+            if (string.IsNullOrWhiteSpace(address))
             {
-                if (message.IsSuccessStatusCode)
-                {
-                    BalanceResponse balanceResponse = await message.Content.ReadAsAsync<BalanceResponse>();
-                    result.IsSuccess = true;
-                    result.Data = balanceResponse;
-
-                    return result;
-                }
-
-                string errorMessage = await message.Content.ReadAsStringAsync();
-                int statusCode = (int)message.StatusCode;
-
-                result.Error = new PublicError
-                {
-                    Code = statusCode,
-                    Message = errorMessage
-                };
-
-                return result;
+                throw new ArgumentNullException(nameof(address));
             }
+
+            var result = new Result<BalanceResponse, ErrorResponse>();
+            string requestUri = $"{mBaseUrl}/v1/{currency}/Addresses/{address}";
+
+            try
+            {
+                using (HttpClient httpClient = new HttpClient())
+                using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
+                {
+                    if (response.IsSuccessStatusCode)
+                    {
+                        BalanceResponse balanceResponse = await response.Content.ReadAsAsync<BalanceResponse>();
+                        result.IsSuccess = true;
+                        result.Data = balanceResponse;
+
+                        return result;
+                    }
+
+                    string contentString = await response.Content.ReadAsStringAsync();
+                    result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
+                }
+            }
+            catch (HttpRequestException)
+            {
+                result.IsSuccess = false;
+                result.Error = ResponseHandler.GetExceptionError();
+            }
+
+            return result;
         }
 
         /// <summary>
         /// Get a list of transactions for specified currency.
         /// </summary>
         /// <param name="currency">Currency type.</param>
+        /// <param name="address">Your Gluwacoin public Address.</param>
+        /// <param name="privateKey">Your Gluwacoin Private Key.</param>
         /// <param name="limit">Number of transactions to include in the result. optional. Defaults to 100.</param> 
         /// <param name="status">Filter by transaction status. Optional. Defaults to Confimred.</param>
         /// <param name="offset">Number of transactions to skip; used for pagination. Optional. Default to 0.</param>
@@ -107,15 +100,25 @@ namespace Gluwa.Clients
         /// <response code="403">Request signature header is not valid.</response>
         /// <response code="500">Server error.</response>
         /// <response code="503">Service unavailable.</response>
-        public async Task<Result<List<TransactionResponse>, PublicError>> GetTransactionListAsync(
-            ECurrency currency,
-            uint limit = 100,
-            ETransactionStatusFilter status = ETransactionStatusFilter.Confirmed,
-            uint offset = 0)
+        public async Task<Result<List<TransactionResponse>, ErrorResponse>> GetTransactionListAsync(
+           ECurrency currency,
+           string address,
+           string privateKey,
+           uint limit = 100,
+           ETransactionStatusFilter status = ETransactionStatusFilter.Confirmed,
+           uint offset = 0)
         {
-            var result = new Result<List<TransactionResponse>, PublicError>();
+            if (string.IsNullOrWhiteSpace(address))
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+            else if (string.IsNullOrWhiteSpace(privateKey))
+            {
+                throw new ArgumentNullException(nameof(privateKey));
+            }
 
-            string requestUri = $"{mBaseUrl}/v1/{currency}/Addresses/{mAddress}/Transactions";
+            var result = new Result<List<TransactionResponse>, ErrorResponse>();
+            string requestUri = $"{mBaseUrl}/v1/{currency}/Addresses/{address}/Transactions";
 
             var queryParams = new List<string>();
             if (offset > 0)
@@ -132,38 +135,41 @@ namespace Gluwa.Clients
                 requestUri = $"{requestUri}?{string.Join("&", queryParams)}";
             }
 
-            using (HttpClient httpClient = new HttpClient())
+            try
             {
-                httpClient.DefaultRequestHeaders.Add("X-REQUEST-SIGNATURE", getTimestampSignature());
-                using (HttpResponseMessage message = await httpClient.GetAsync(requestUri))
+                using (HttpClient httpClient = new HttpClient())
                 {
-                    if (message.IsSuccessStatusCode)
+                    httpClient.DefaultRequestHeaders.Add("X-REQUEST-SIGNATURE", getTimestampSignature(privateKey));
+                    using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
                     {
-                        List<TransactionResponse> transactionResponse = await message.Content.ReadAsAsync<List<TransactionResponse>>();
-                        result.IsSuccess = true;
-                        result.Data = transactionResponse;
+                        if (response.IsSuccessStatusCode)
+                        {
+                            List<TransactionResponse> transactionResponse = await response.Content.ReadAsAsync<List<TransactionResponse>>();
+                            result.IsSuccess = true;
+                            result.Data = transactionResponse;
 
-                        return result;
+                            return result;
+                        }
+
+                        string contentString = await response.Content.ReadAsStringAsync();
+                        result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
                     }
-
-                    string errorMessage = await message.Content.ReadAsStringAsync();
-                    int statusCode = (int)message.StatusCode;
-
-                    result.Error = new PublicError
-                    {
-                        Code = statusCode,
-                        Message = errorMessage
-                    };
-
-                    return result;
                 }
             }
+            catch (HttpRequestException)
+            {
+                result.IsSuccess = false;
+                result.Error = ResponseHandler.GetExceptionError();
+            }
+
+            return result;
         }
 
         /// <summary>
         /// Get bitcoin or gluwacoin transaction by hash.
         /// </summary>
         /// <param name="currency">Currency type</param>
+        /// <param name="privateKey">Your Gluwacoin Private Key.</param>
         /// <param name="txnHash">Hash of the transaction on the blockchain.</param>
         /// <response code="200">Transaction response.</response>
         /// <response code="400">Invalid transaction hash format.</response>
@@ -171,68 +177,84 @@ namespace Gluwa.Clients
         /// <response code="404">Tranasction not found.</response>
         /// <response code="500">Server error.</response>
         /// <response code="503">Service unavailable.</response>
-        public async Task<Result<TransactionResponse, PublicError>> GetTransactionDetailsAsync(ECurrency currency, string txnHash)
+        public async Task<Result<TransactionResponse, ErrorResponse>> GetTransactionDetailsAsync(ECurrency currency, string privateKey, string txnHash)
         {
-            if (string.IsNullOrWhiteSpace(txnHash))
+            if (string.IsNullOrWhiteSpace(privateKey))
+            {
+                throw new ArgumentNullException(nameof(privateKey));
+            }
+            else if (string.IsNullOrWhiteSpace(txnHash))
             {
                 throw new ArgumentNullException(nameof(txnHash));
             }
-            var result = new Result<TransactionResponse, PublicError>();
 
+            var result = new Result<TransactionResponse, ErrorResponse>();
             string requestUri = $"{mBaseUrl}/v1/{currency}/Transactions/{txnHash}";
 
-            using (HttpClient httpClient = new HttpClient())
+            try
             {
-                httpClient.DefaultRequestHeaders.Add("X-REQUEST-SIGNATURE", getTimestampSignature());
-                using (HttpResponseMessage message = await httpClient.GetAsync(requestUri))
+                using (HttpClient httpClient = new HttpClient())
                 {
-                    if (message.IsSuccessStatusCode)
+                    httpClient.DefaultRequestHeaders.Add("X-REQUEST-SIGNATURE", getTimestampSignature(privateKey));
+                    using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
                     {
-                        TransactionResponse transactionResponse = await message.Content.ReadAsAsync<TransactionResponse>();
-                        result.IsSuccess = true;
-                        result.Data = transactionResponse;
+                        if (response.IsSuccessStatusCode)
+                        {
+                            TransactionResponse transactionResponse = await response.Content.ReadAsAsync<TransactionResponse>();
+                            result.IsSuccess = true;
+                            result.Data = transactionResponse;
 
-                        return result;
+                            return result;
+                        }
+
+                        string contentString = await response.Content.ReadAsStringAsync();
+                        result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
                     }
-
-                    string errorMessage = await message.Content.ReadAsStringAsync();
-                    int statusCode = (int)message.StatusCode;
-
-                    result.Error = new PublicError
-                    {
-                        Code = statusCode,
-                        Message = errorMessage
-                    };
-
-                    return result;
                 }
             }
+            catch (HttpRequestException)
+            {
+                result.IsSuccess = false;
+                result.Error = ResponseHandler.GetExceptionError();
+            }
+
+            return result;
         }
 
         /// <summary>
         /// Create a new Bitcoin or Gluwacoin transaction.
         /// </summary>
         /// <param name="currency">Currency type</param>
+        /// <param name="address">Your Gluwacoin public Address.</param>
+        /// <param name="privateKey">Your Gluwacoin Private Key.</param>
         /// <param name="amount">Transaction amount, not including the fee.</param>
         /// <param name="target">The address that the transaction will be sent to.</param>
         /// <param name="merchantOrderID">Identifier for the transaction that was provided by the merchant user. Optional.</param>
         /// <param name="note">Additional information about the transaction that a user can provide. Optional.</param>
-        /// <param name="expiry">Expiry of the Transfer Request. Optional.</param>
         /// <response code="202">Newly accepted transaction.</response>
         /// <response code="400">Invalid request. or Validation error. See inner errors for more details. or (BTC only) Signed BTC transaction could not be verified.</response>
         /// <response code="403">For payments, payment signature could not be verified.</response>
         /// <response code="409">A transaction with the same transaction hash, payment ID, or idem already exists.</response>
         /// <response code="500">Server error.</response>
         /// <response code="503">Service unavailable.</response>
-        public async Task<Result<bool, PublicError>> CreateTransactionAsync(
+        public async Task<Result<bool, ErrorResponse>> CreateTransactionAsync(
             ECurrency currency,
+            string address,
+            string privateKey,
             string amount,
             string target,
             string merchantOrderID = null,
-            string note = null,
-            int expiry = 0)
+            string note = null)
         {
-            if (string.IsNullOrWhiteSpace(amount))
+            if (string.IsNullOrWhiteSpace(address))
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+            else if (string.IsNullOrWhiteSpace(privateKey))
+            {
+                throw new ArgumentNullException(nameof(privateKey));
+            }
+            else if (string.IsNullOrWhiteSpace(amount))
             {
                 throw new ArgumentNullException(nameof(amount));
             }
@@ -244,19 +266,25 @@ namespace Gluwa.Clients
             {
                 throw new ArgumentNullException(nameof(currency));
             }
-            var result = new Result<bool, PublicError>();
+            var result = new Result<bool, ErrorResponse>();
             var requestUri = $"{mBaseUrl}/v1/Transactions";
 
-            var getFee = getFeeAsync(currency).Result.Data.MinimumFee;
+            Result<FeeResponse, ErrorResponse> getFee = await getFeeAsync(currency);
+            if (getFee.IsFailure)
+            {
+                result.Error = getFee.Error;
+
+                return result;
+            }
 
             BigInteger convertAmount = GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
-            BigInteger convertFee = GluwacoinConverter.ConvertToGluwacoinBigInteger(getFee);
+            BigInteger convertFee = GluwacoinConverter.ConvertToGluwacoinBigInteger(getFee.Data.MinimumFee.ToString());
             int nonce = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds);
 
             ABIEncode abiEncode = new ABIEncode();
             byte[] messageHash = abiEncode.GetSha3ABIEncodedPacked(
                 new ABIValue("address", getContractAddress(currency, mbSandbox)),
-                new ABIValue("address", mAddress),
+                new ABIValue("address", address),
                 new ABIValue("address", target),
                 new ABIValue("uint256", convertAmount),
                 new ABIValue("uint256", convertFee),
@@ -264,7 +292,7 @@ namespace Gluwa.Clients
                 );
 
             var signer = new EthereumMessageSigner();
-            string addressRecovered = signer.Sign(messageHash, mPrivateKey);
+            string addressRecovered = signer.Sign(messageHash, privateKey);
 
             TransactionRequest bodyParams = new TransactionRequest
             {
@@ -272,8 +300,8 @@ namespace Gluwa.Clients
                 Currency = currency,
                 Target = target,
                 Amount = amount,
-                Fee = getFee,
-                Source = mAddress,
+                Fee = getFee.Data.MinimumFee,
+                Source = address,
                 Nonce = nonce.ToString(),
                 MerchantOrderID = merchantOrderID,
                 Note = note
@@ -282,36 +310,37 @@ namespace Gluwa.Clients
             string json = bodyParams.ToJson();
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            using (HttpClient httpClient = new HttpClient())
-            using (var response = await httpClient.PostAsync(requestUri, content))
+            try
             {
-                if (response.IsSuccessStatusCode)
+                using (HttpClient httpClient = new HttpClient())
+                using (var response = await httpClient.PostAsync(requestUri, content))
                 {
-                    result.IsSuccess = true;
-                    result.Data = true;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        result.IsSuccess = true;
+                        result.Data = true;
 
-                    return result;
+                        return result;
+                    }
+
+                    string contentString = await response.Content.ReadAsStringAsync();
+                    result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
                 }
-
-                string errorMessage = await response.Content.ReadAsStringAsync();
-                int statusCode = (int)response.StatusCode;
-
-                result.Error = new PublicError
-                {
-                    Code = statusCode,
-                    Message = errorMessage
-                };
-
-                return result;
             }
+            catch(HttpRequestException)
+            {
+                result.IsSuccess = false;
+                result.Error = ResponseHandler.GetExceptionError();
+            }
+            return result;
         }
 
-        private string getContractAddress(ECurrency currency, bool mIsDevEnv)
+        private string getContractAddress(ECurrency currency, bool bSandbox)
         {
             switch (currency)
             {
                 case ECurrency.USDG:
-                    if (mIsDevEnv)
+                    if (bSandbox)
                     {
                         return "0x8e9611f8ebc9323EdDA39eA2d8F31bbb2436adEE";
                     }
@@ -320,7 +349,7 @@ namespace Gluwa.Clients
                         return "0xfb0aaa0432112779d9ac483d9d5e3961ece18eec";
                     }
                 case ECurrency.KRWG:
-                    if (mIsDevEnv)
+                    if (bSandbox)
                     {
                         return "0x408b7959b3e15b8b1e8495fa9cb123c0180d44db";
                     }
@@ -333,11 +362,16 @@ namespace Gluwa.Clients
             }
         }
 
-        private string getTimestampSignature()
+        private string getTimestampSignature(string privateKey)
         {
+            if (string.IsNullOrWhiteSpace(privateKey))
+            {
+                throw new ArgumentNullException(nameof(privateKey));
+            }
+
             var signer = new EthereumMessageSigner();
             string Timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString();
-            string signature = signer.EncodeUTF8AndSign(Timestamp, new EthECKey(mPrivateKey));
+            string signature = signer.EncodeUTF8AndSign(Timestamp, new EthECKey(privateKey));
 
             string gluwaSignature = $"{Timestamp}.{signature}";
             byte[] gluwaSignatureByte = Encoding.UTF8.GetBytes(gluwaSignature);
@@ -346,35 +380,36 @@ namespace Gluwa.Clients
             return encodedData;
         }
 
-        private async Task<Result<FeeResponse, PublicError>> getFeeAsync(ECurrency currency)
+        private async Task<Result<FeeResponse, ErrorResponse>> getFeeAsync(ECurrency currency)
         {
-            var result = new Result<FeeResponse, PublicError>();
-
+            var result = new Result<FeeResponse, ErrorResponse>();
             string requestUri = $"{mBaseUrl}/v1/{currency}/Fee";
 
-            using (HttpClient httpClient = new HttpClient())
-            using (HttpResponseMessage message = await httpClient.GetAsync(requestUri))
+            try
             {
-                if (message.IsSuccessStatusCode)
+                using (HttpClient httpClient = new HttpClient())
+                using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
                 {
-                    FeeResponse feeResponse = await message.Content.ReadAsAsync<FeeResponse>();
-                    result.IsSuccess = true;
-                    result.Data = feeResponse;
+                    FeeResponse feeResponse = await response.Content.ReadAsAsync<FeeResponse>();
 
-                    return result;
+                    if (response.IsSuccessStatusCode)
+                    {
+                        result.IsSuccess = true;
+                        result.Data = feeResponse;
+
+                        return result;
+                    }
+
+                    string contentString = await response.Content.ReadAsStringAsync();
+                    result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
                 }
-
-                string errorMessage = await message.Content.ReadAsStringAsync();
-                int statusCode = (int)message.StatusCode;
-
-                result.Error = new PublicError
-                {
-                    Code = statusCode,
-                    Message = errorMessage
-                };
-
-                return result;
             }
+            catch (HttpRequestException)
+            {
+                result.IsSuccess = false;
+                result.Error = ResponseHandler.GetExceptionError();
+            }
+            return result;
         }
     }
 }
