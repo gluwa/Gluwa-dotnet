@@ -1,6 +1,4 @@
-﻿using Gluwa.Error;
-
-namespace Gluwa.Error
+﻿namespace Gluwa.Error
 {
     public sealed class Result<T, E> where E : IError
     {

@@ -1,8 +1,8 @@
-﻿using Nethereum.Util;
-using Newtonsoft.Json;
+﻿using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using System.Numerics;
+using System;
+using System.Diagnostics;
 
 namespace Gluwa.Utils
 {
@@ -24,6 +24,20 @@ namespace Gluwa.Utils
             settings.ContractResolver = new DefaultContractResolver();  // Pascal Casing
 
             settings.Converters.Add(new StringEnumConverter());
+        }
+
+        public static T FromJson<T>(string jsonStr) where T : class
+        {
+            try
+            {
+                return JsonConvert.DeserializeObject<T>(jsonStr);
+            }
+            catch (Exception)
+            {
+                Debug.Fail($"Failed to deserialize {jsonStr}");
+
+                return null;
+            }
         }
 
         public static string ToJson<T>(this T obj)

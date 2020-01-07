@@ -9,7 +9,7 @@ namespace Gluwa.Models
         /// </summary>
         [Required]
         public ECurrency? Currency { get; set; }
-        
+
         /// <summary>
         /// Current minimum amount of the fee that Gluwa will accept.
         /// </summary>

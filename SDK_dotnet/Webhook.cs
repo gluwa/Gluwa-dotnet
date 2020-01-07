@@ -1,14 +1,14 @@
 ﻿using Gluwa.Models;
 using Gluwa.Utils;
+using Newtonsoft.Json;
 using System;
-using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Text;
 
 namespace Gluwa
 {
     /// <summary>
-    /// When user completes transfer via the QR code, the Gluwa API sends a webhook to your webhook endpoint.
+    /// When user completes transfer, the Gluwa API sends a webhook to your webhook endpoint.
     /// Verify that the values ​​actually sent by the Gluwa server are correct.
     /// </summary>
     public sealed class Webhook
@@ -16,12 +16,10 @@ namespace Gluwa
         private readonly string mWebhookSecretKey;
 
         /// <summary>
-        /// Webhook that need webhooksecret key
+        /// Constructor
         /// </summary>
-        /// <param name="webhookSecretKey">Your Webhook Secret.</param>
-        public Webhook(string webhookSecretKey)
-        {
-            mWebhookSecretKey = webhookSecretKey;
+        public Webhook()
+        {       
         }
 
         /// <summary>
@@ -29,8 +27,10 @@ namespace Gluwa
         /// </summary>
         /// <param name="payLoad">request body</param>
         /// <param name="signature">x-request-signature</param>
-        public bool ValidateWebhook(PayLoad payLoad, string signature)
+        /// <param name="webhookSecretKey">Your Webhook Secret.</param>
+        public bool ValidateWebhook(PayLoad payLoad, string signature, string webhookSecretKey)
         {
+            Converter.Settings.NullValueHandling = NullValueHandling.Include;
             string payload = Converter.ToJson<PayLoad>(payLoad);
 
             if (string.IsNullOrWhiteSpace(payload))
@@ -43,7 +43,7 @@ namespace Gluwa
             }
 
             string payloadHashBase64;
-            byte[] key = Encoding.UTF8.GetBytes(mWebhookSecretKey);
+            byte[] key = Encoding.UTF8.GetBytes(webhookSecretKey);
             using (var encryptor = new HMACSHA256(key))
             {
                 byte[] payloadBytes = Encoding.UTF8.GetBytes(payload);
