@@ -16,7 +16,7 @@ namespace Gluwa
         /// The constructor
         /// </summary>
         public Webhook()
-        {    
+        {
         }
 
         /// <summary>
@@ -27,8 +27,26 @@ namespace Gluwa
         /// <param name="webhookSecretKey">Your Webhook Secret.</param>
         public bool ValidateWebhook(PayLoad payLoad, string signature, string webhookSecretKey)
         {
-            Converter.Settings.NullValueHandling = NullValueHandling.Include;
-            string payload = Converter.ToJson<PayLoad>(payLoad);
+            string payload;
+
+            if (payLoad.Type == ENotificationType.Webhook.ToString())
+            {
+                WebhookPayLoad webhookPayLoad = new WebhookPayLoad()
+                {
+                    MerchantOrderID = payLoad.MerchantOrderID,
+                    EventType = payLoad.EventType,
+                    Type = payLoad.Type,
+                    ResourceID = payLoad.ResourceID
+                };
+
+                Converter.Settings.NullValueHandling = NullValueHandling.Include;
+                string webhookpayload = Converter.ToJson<WebhookPayLoad>(webhookPayLoad);
+                payload = webhookpayload;
+            }
+            else
+            {
+                payload = Converter.ToJson<PayLoad>(payLoad);
+            }
 
             if (string.IsNullOrWhiteSpace(payload))
             {

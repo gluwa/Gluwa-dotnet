@@ -2,7 +2,7 @@
 
 namespace Gluwa.Models
 {
-    public sealed class PayLoadData
+    internal sealed class WebhookPayLoad
     {
         /// <summary>
         /// Identifier for the transaction that was provided by the merchant user.
@@ -10,16 +10,16 @@ namespace Gluwa.Models
         public string MerchantOrderID { get; set; }
 
         /// <summary>
-        /// 1 is TransactionConfirmed.
+        /// TransactionConfirmed or TransactionCreated or TransactionFailed
         /// </summary>
         [Required]
-        public int EventType { get; set; }
+        public string EventType { get; set; }
 
         /// <summary>
-        /// 0 is Webhook.
+        /// Webhook
         /// </summary>
         [Required]
-        public int Type { get; set; }
+        public string Type { get; set; }
 
         /// <summary>
         /// Transcation ID
