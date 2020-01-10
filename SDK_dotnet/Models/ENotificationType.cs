@@ -1,12 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Gluwa.Models
+﻿namespace Gluwa.Models
 {
     public enum ENotificationType
     {
-        PushNotification,
         Webhook
     }
 }

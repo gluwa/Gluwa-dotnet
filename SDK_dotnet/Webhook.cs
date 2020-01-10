@@ -1,6 +1,5 @@
 ﻿using Gluwa.Models;
 using Gluwa.Utils;
-using Newtonsoft.Json;
 using System;
 using System.Security.Cryptography;
 using System.Text;
@@ -13,13 +12,6 @@ namespace Gluwa
     public sealed class Webhook
     {
         /// <summary>
-        /// The constructor
-        /// </summary>
-        public Webhook()
-        {
-        }
-
-        /// <summary>
         /// Verify the requested Signature and Payload
         /// </summary>
         /// <param name="payLoad">Payload</param>
@@ -27,26 +19,7 @@ namespace Gluwa
         /// <param name="webhookSecretKey">Your Webhook Secret.</param>
         public bool ValidateWebhook(PayLoad payLoad, string signature, string webhookSecretKey)
         {
-            string payload;
-
-            if (payLoad.Type == ENotificationType.Webhook.ToString())
-            {
-                WebhookPayLoad webhookPayLoad = new WebhookPayLoad()
-                {
-                    MerchantOrderID = payLoad.MerchantOrderID,
-                    EventType = payLoad.EventType,
-                    Type = payLoad.Type,
-                    ResourceID = payLoad.ResourceID
-                };
-
-                Converter.Settings.NullValueHandling = NullValueHandling.Include;
-                string webhookpayload = Converter.ToJson<WebhookPayLoad>(webhookPayLoad);
-                payload = webhookpayload;
-            }
-            else
-            {
-                payload = Converter.ToJson<PayLoad>(payLoad);
-            }
+            string payload = Converter.ToJson(payLoad);
 
             if (string.IsNullOrWhiteSpace(payload))
             {
