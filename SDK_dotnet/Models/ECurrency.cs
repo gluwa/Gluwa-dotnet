@@ -2,7 +2,7 @@
 {
     public enum ECurrency
     {
-        USDG = 0,
-        KRWG = 1
+        USDG,
+        KRWG
     }
 }
