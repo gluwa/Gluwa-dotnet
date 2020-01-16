@@ -1,8 +1,8 @@
-﻿using Gluwa.Utils;
+﻿using SDK_dotnet.Utils;
 using System.Net.Http;
 using System.Threading.Tasks;
 
-namespace Gluwa.Error
+namespace SDK_dotnet.Error
 {
     public static class ResponseHandler
     {

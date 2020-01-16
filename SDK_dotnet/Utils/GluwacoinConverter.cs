@@ -1,7 +1,7 @@
 ﻿using Nethereum.Util;
 using System.Numerics;
 
-namespace Gluwa.Utils
+namespace SDK_dotnet.Utils
 {
     internal static class GluwacoinConverter
     {

@@ -1,4 +1,4 @@
-﻿namespace Gluwa.Error
+﻿namespace SDK_dotnet.Error
 {
     public sealed class InnerError<E>
     {

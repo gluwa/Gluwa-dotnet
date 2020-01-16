@@ -1,6 +1,6 @@
-﻿using Gluwa.Error;
-using Gluwa.Models;
-using Gluwa.Utils;
+﻿using SDK_dotnet.Error;
+using SDK_dotnet.Models;
+using SDK_dotnet.Utils;
 using Nethereum.ABI;
 using Nethereum.Signer;
 using System;
@@ -11,7 +11,7 @@ using System.Numerics;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Gluwa.Clients
+namespace SDK_dotnet.Clients
 {
     /// <summary>
     /// Client for public APIs

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace Gluwa.Models
+namespace SDK_dotnet.Models
 {
     public sealed class TransactionResponse
     {

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
 
-namespace Gluwa.Models
+namespace SDK_dotnet.Models
 {
     internal sealed class TransactionRequest
     {

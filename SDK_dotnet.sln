@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.29609.76
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Gluwa", "SDK_dotnet\Gluwa.csproj", "{5588F947-EFE2-48D3-92DE-15A18DFEE809}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SDK_dotnet", "SDK_dotnet\SDK_dotnet.csproj", "{5588F947-EFE2-48D3-92DE-15A18DFEE809}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

@@ -1,4 +1,4 @@
-﻿namespace Gluwa.Models
+﻿namespace SDK_dotnet.Models
 {
     public enum ETransactionStatus
     {

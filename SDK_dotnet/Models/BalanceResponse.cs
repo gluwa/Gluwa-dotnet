@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace Gluwa.Models
+namespace SDK_dotnet.Models
 {
     public sealed class BalanceResponse
     {
