@@ -9,7 +9,7 @@ namespace Gluwa.SDK_dotnet
     /// <summary>
     /// Verify that the webhook is sent by the Gluwa.
     /// </summary>
-    public sealed class Webhook
+    public static class Webhook
     {
         /// <summary>
         /// Verify the requested Signature and Payload
@@ -17,7 +17,7 @@ namespace Gluwa.SDK_dotnet
         /// <param name="payLoad">Payload</param>
         /// <param name="signature">The value of X-REQUEST-SIGNATURE</param>
         /// <param name="webhookSecretKey">Your Webhook Secret.</param>
-        public bool ValidateWebhook(PayLoad payLoad, string signature, string webhookSecretKey)
+        public static bool ValidateWebhook(PayLoad payLoad, string signature, string webhookSecretKey)
         {
             string payload = Converter.ToJson(payLoad);
 
