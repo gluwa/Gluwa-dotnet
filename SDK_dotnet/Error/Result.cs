@@ -1,4 +1,4 @@
-﻿namespace SDK_dotnet.Error
+﻿namespace Gluwa.SDK_dotnet.Error
 {
     public sealed class Result<T, E> where E : IError
     {

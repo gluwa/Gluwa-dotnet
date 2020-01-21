@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 
-namespace SDK_dotnet.Error
+namespace Gluwa.SDK_dotnet.Error
 {
     public sealed class ErrorResponse : IError
     {

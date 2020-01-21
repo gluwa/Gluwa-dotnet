@@ -1,10 +1,10 @@
-﻿using SDK_dotnet.Models;
-using SDK_dotnet.Utils;
+﻿using Gluwa.SDK_dotnet.Models;
+using Gluwa.SDK_dotnet.Utils;
 using System;
 using System.Security.Cryptography;
 using System.Text;
 
-namespace SDK_dotnet
+namespace Gluwa.SDK_dotnet
 {
     /// <summary>
     /// Verify that the webhook is sent by the Gluwa.

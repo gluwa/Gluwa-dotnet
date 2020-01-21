@@ -1,6 +1,6 @@
-﻿using SDK_dotnet.Error;
-using SDK_dotnet.Models;
-using SDK_dotnet.Utils;
+﻿using Gluwa.SDK_dotnet.Error;
+using Gluwa.SDK_dotnet.Models;
+using Gluwa.SDK_dotnet.Utils;
 using Nethereum.Signer;
 using System;
 using System.Collections.Generic;
@@ -8,7 +8,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace SDK_dotnet.Clients
+namespace Gluwa.SDK_dotnet.Clients
 {
     /// <summary>
     /// QRCodeClient generates payment QR code image.

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Reflection;
 
-namespace SDK_dotnet.Error
+namespace Gluwa.SDK_dotnet.Error
 {
     /// <summary>
     /// Gluwa standard internal error class with no InnerError

@@ -4,7 +4,7 @@ using Newtonsoft.Json.Serialization;
 using System;
 using System.Diagnostics;
 
-namespace SDK_dotnet.Utils
+namespace Gluwa.SDK_dotnet.Utils
 {
     internal static class Converter
     {

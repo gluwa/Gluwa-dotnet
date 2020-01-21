@@ -1,6 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations;
 
-namespace SDK_dotnet.Models
+namespace Gluwa.SDK_dotnet.Models
 {
     public sealed class PayLoad
     {

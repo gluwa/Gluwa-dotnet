@@ -1,4 +1,4 @@
-﻿namespace SDK_dotnet.Models
+﻿namespace Gluwa.SDK_dotnet.Models
 {
     public enum EEventType
     {
