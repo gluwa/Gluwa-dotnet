@@ -32,11 +32,11 @@ namespace Gluwa.SDK_dotnet.Clients
 
             if (mbSandbox)
             {
-                mBaseUrl = "https://sandbox.api.gluwa.com";
+                mBaseUrl = Constants.GLUWA_SANDBOX_API_BASE_URL;
             }
             else
             {
-                mBaseUrl = "https://api.gluwa.com";
+                mBaseUrl = Constants.GLUWA_API_BASE_URL;
             }
         }
 
@@ -342,20 +342,20 @@ namespace Gluwa.SDK_dotnet.Clients
                 case ECurrency.USDG:
                     if (bSandbox)
                     {
-                        return "0x8e9611f8ebc9323EdDA39eA2d8F31bbb2436adEE";
+                        return Constants.GLUWACOIN_SANDBOX_USDG_CONTRACT_ADDRESS;
                     }
                     else
                     {
-                        return "0xfb0aaa0432112779d9ac483d9d5e3961ece18eec";
+                        return Constants.GLUWACOIN_USDG_CONTRACT_ADDRESS;
                     }
                 case ECurrency.KRWG:
                     if (bSandbox)
                     {
-                        return "0x408b7959b3e15b8b1e8495fa9cb123c0180d44db";
+                        return Constants.GLUWACOIN_SANDBOX_KRWG_CONTRACT_ADDRESS;
                     }
                     else
                     {
-                        return "0x4cc8486f2f3dce2d3b5e27057cf565e16906d12d";
+                        return Constants.GLUWACOIN_KRWG_CONTRACT_ADDRESS;
                     }
                 default:
                     throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
@@ -375,7 +375,7 @@ namespace Gluwa.SDK_dotnet.Clients
 
             string gluwaSignature = $"{Timestamp}.{signature}";
             byte[] gluwaSignatureByte = Encoding.UTF8.GetBytes(gluwaSignature);
-            string encodedData = System.Convert.ToBase64String(gluwaSignatureByte);
+            string encodedData = Convert.ToBase64String(gluwaSignatureByte);
 
             return encodedData;
         }

@@ -29,11 +29,11 @@ namespace Gluwa.SDK_dotnet.Clients
 
             if (mbSandbox)
             {
-                mBaseUrl = "https://sandbox.api.gluwa.com";
+                mBaseUrl = Constants.GLUWA_SANDBOX_API_BASE_URL;
             }
             else
             {
-                mBaseUrl = "https://api.gluwa.com";
+                mBaseUrl = Constants.GLUWA_API_BASE_URL;
             }
         }
 
