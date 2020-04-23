@@ -45,11 +45,12 @@ namespace Gluwa.SDK_dotnet.Clients
         /// </summary>
         /// <param name="currency">Currency type.</param>
         /// <param name="address">Your Gluwacoin public Address.</param>
+        /// <param name="bIncludeUnspentOutputs">(For BTC only) if "true", the response includes unspent outputs for the address. "false" by default.</param>
         /// <response code="200">Balance and associated currency.</response>
         /// <response code="400">Invalid address format.</response>
         /// <response code="500">Server error.</response>
         /// <response code="503">Service unavailable for the specified currency or temporarily.</response>
-        public async Task<Result<BalanceResponse, ErrorResponse>> GetBalanceAsync(ECurrency currency, string address)
+        public async Task<Result<BalanceResponse, ErrorResponse>> GetBalanceAsync(ECurrency currency, string address, bool bIncludeUnspentOutputs = false)
         {
             if (string.IsNullOrWhiteSpace(address))
             {
@@ -231,6 +232,10 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <param name="target">The address that the transaction will be sent to.</param>
         /// <param name="merchantOrderID">Identifier for the transaction that was provided by the merchant user. Optional.</param>
         /// <param name="note">Additional information about the transaction that a user can provide. Optional.</param>
+        /// <param name="nonce">Nonce for the transaction. For Gluwacoin currencies only.</param>
+        /// <param name="Idem">Idempotent key for the transaction to prevent duplicate transactions.</param>
+        /// <param name="paymentID">ID for the QR code payment.</param>
+        /// <param name="paymentSig">Signature of the QR code payment.Required if PaymentID is not null.</param>
         /// <response code="202">Newly accepted transaction.</response>
         /// <response code="400">Invalid request. or Validation error. See inner errors for more details. or (BTC only) Signed BTC transaction could not be verified.</response>
         /// <response code="403">For payments, payment signature could not be verified.</response>
@@ -244,7 +249,11 @@ namespace Gluwa.SDK_dotnet.Clients
             string amount,
             string target,
             string merchantOrderID = null,
-            string note = null)
+            string note = null,
+            string nonce = null,
+            string Idem = null,
+            string paymentID = null,
+            string paymentSig = null)
         {
             if (string.IsNullOrWhiteSpace(address))
             {
@@ -279,7 +288,7 @@ namespace Gluwa.SDK_dotnet.Clients
 
             BigInteger convertAmount = GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
             BigInteger convertFee = GluwacoinConverter.ConvertToGluwacoinBigInteger(getFee.Data.MinimumFee.ToString());
-            int nonce = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds);
+            nonce = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString();
 
             ABIEncode abiEncode = new ABIEncode();
             byte[] messageHash = abiEncode.GetSha3ABIEncodedPacked(
@@ -288,7 +297,7 @@ namespace Gluwa.SDK_dotnet.Clients
                 new ABIValue("address", target),
                 new ABIValue("uint256", convertAmount),
                 new ABIValue("uint256", convertFee),
-                new ABIValue("uint256", nonce)
+                new ABIValue("uint256", Int32.Parse(nonce))
                 );
 
             var signer = new EthereumMessageSigner();
@@ -356,6 +365,15 @@ namespace Gluwa.SDK_dotnet.Clients
                     else
                     {
                         return Constants.GLUWACOIN_KRWG_CONTRACT_ADDRESS;
+                    }
+                case ECurrency.NGNG:
+                    if (bSandbox)
+                    {
+                        return Constants.GLUWACOIN_SANDBOX_NGNG_CONTRACT_ADDRESS;
+                    }
+                    else
+                    {
+                        return Constants.GLUWACOIN_NGNG_CONTRACT_ADDRESS;
                     }
                 default:
                     throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");

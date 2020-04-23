@@ -24,6 +24,12 @@ namespace Gluwa.SDK_dotnet.Models
         public string Fee { get; set; }
 
         /// <summary>
+        /// Total transaction amount, which is a combination of the transaction amount and the fee.
+        /// For GET transactions by address, value can be either positive if it is received by the address, or negative if it is sent from the address.
+        /// </summary>
+        public string TotalAmount { get; set; }
+
+        /// <summary>
         /// Currency of the transaction.
         /// </summary>
         public ECurrency? Currency { get; set; }

@@ -2,7 +2,9 @@
 {
     public enum ECurrency
     {
+        BTC,
         USDG,
-        KRWG
+        KRWG,
+        NGNG
     }
 }
