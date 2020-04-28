@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace Gluwa.SDK_dotnet.Models
 {
@@ -20,7 +19,5 @@ namespace Gluwa.SDK_dotnet.Models
         /// </summary>
         [Range(0, ulong.MaxValue)]
         public ulong? Nonce { get; set; }
-
-        public List<UnspentOutput> UnspentOutputs { get; set; }
     }
 }

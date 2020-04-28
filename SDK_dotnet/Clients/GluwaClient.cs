@@ -45,12 +45,11 @@ namespace Gluwa.SDK_dotnet.Clients
         /// </summary>
         /// <param name="currency">Currency type.</param>
         /// <param name="address">Your Gluwacoin public Address.</param>
-        /// <param name="bIncludeUnspentOutputs">(For BTC only) if "true", the response includes unspent outputs for the address. "false" by default.</param>
         /// <response code="200">Balance and associated currency.</response>
         /// <response code="400">Invalid address format.</response>
         /// <response code="500">Server error.</response>
         /// <response code="503">Service unavailable for the specified currency or temporarily.</response>
-        public async Task<Result<BalanceResponse, ErrorResponse>> GetBalanceAsync(ECurrency currency, string address, bool bIncludeUnspentOutputs = false)
+        public async Task<Result<BalanceResponse, ErrorResponse>> GetBalanceAsync(ECurrency currency, string address)
         {
             if (string.IsNullOrWhiteSpace(address))
             {
@@ -233,7 +232,7 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <param name="merchantOrderID">Identifier for the transaction that was provided by the merchant user. Optional.</param>
         /// <param name="note">Additional information about the transaction that a user can provide. Optional.</param>
         /// <param name="nonce">Nonce for the transaction. For Gluwacoin currencies only.</param>
-        /// <param name="Idem">Idempotent key for the transaction to prevent duplicate transactions.</param>
+        /// <param name="idem">Idempotent key for the transaction to prevent duplicate transactions.</param>
         /// <param name="paymentID">ID for the QR code payment.</param>
         /// <param name="paymentSig">Signature of the QR code payment.Required if PaymentID is not null.</param>
         /// <response code="202">Newly accepted transaction.</response>
@@ -251,7 +250,7 @@ namespace Gluwa.SDK_dotnet.Clients
             string merchantOrderID = null,
             string note = null,
             string nonce = null,
-            string Idem = null,
+            string idem = null,
             string paymentID = null,
             string paymentSig = null)
         {
@@ -275,6 +274,7 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(currency));
             }
+
             var result = new Result<bool, ErrorResponse>();
             var requestUri = $"{mBaseUrl}/v1/Transactions";
 
@@ -288,7 +288,10 @@ namespace Gluwa.SDK_dotnet.Clients
 
             BigInteger convertAmount = GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
             BigInteger convertFee = GluwacoinConverter.ConvertToGluwacoinBigInteger(getFee.Data.MinimumFee.ToString());
-            nonce = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString();
+            if (nonce == null)
+            {
+                nonce = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString();
+            }
 
             ABIEncode abiEncode = new ABIEncode();
             byte[] messageHash = abiEncode.GetSha3ABIEncodedPacked(
@@ -297,11 +300,14 @@ namespace Gluwa.SDK_dotnet.Clients
                 new ABIValue("address", target),
                 new ABIValue("uint256", convertAmount),
                 new ABIValue("uint256", convertFee),
-                new ABIValue("uint256", Int32.Parse(nonce))
+                new ABIValue("uint256", int.Parse(nonce))
                 );
 
             var signer = new EthereumMessageSigner();
             string addressRecovered = signer.Sign(messageHash, privateKey);
+
+            var convertIdem = idem == null ? null : (Guid?)Guid.Parse(idem);
+            var convertPaymentID = paymentID == null ? null : (Guid?)Guid.Parse(paymentID);
 
             TransactionRequest bodyParams = new TransactionRequest
             {
@@ -313,7 +319,10 @@ namespace Gluwa.SDK_dotnet.Clients
                 Source = address,
                 Nonce = nonce.ToString(),
                 MerchantOrderID = merchantOrderID,
-                Note = note
+                Note = note,
+                Idem = convertIdem,
+                PaymentID = convertPaymentID,
+                PaymentSig = paymentSig
             };
 
             string json = bodyParams.ToJson();
@@ -336,7 +345,7 @@ namespace Gluwa.SDK_dotnet.Clients
                     result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
                 }
             }
-            catch(HttpRequestException)
+            catch (HttpRequestException)
             {
                 result.IsSuccess = false;
                 result.Error = ResponseHandler.GetExceptionError();
