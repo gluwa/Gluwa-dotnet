@@ -3,6 +3,7 @@
     public enum ECurrency
     {
         USDG,
-        KRWG
+        KRWG,
+        NGNG
     }
 }
