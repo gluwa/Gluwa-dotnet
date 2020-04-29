@@ -250,8 +250,8 @@ namespace Gluwa.SDK_dotnet.Clients
             string merchantOrderID = null,
             string note = null,
             string nonce = null,
-            string idem = null,
-            string paymentID = null,
+            Guid? idem = null,
+            Guid? paymentID = null,
             string paymentSig = null)
         {
             if (string.IsNullOrWhiteSpace(address))
@@ -306,9 +306,6 @@ namespace Gluwa.SDK_dotnet.Clients
             var signer = new EthereumMessageSigner();
             string addressRecovered = signer.Sign(messageHash, privateKey);
 
-            var convertIdem = idem == null ? null : (Guid?)Guid.Parse(idem);
-            var convertPaymentID = paymentID == null ? null : (Guid?)Guid.Parse(paymentID);
-
             TransactionRequest bodyParams = new TransactionRequest
             {
                 Signature = addressRecovered,
@@ -320,8 +317,8 @@ namespace Gluwa.SDK_dotnet.Clients
                 Nonce = nonce.ToString(),
                 MerchantOrderID = merchantOrderID,
                 Note = note,
-                Idem = convertIdem,
-                PaymentID = convertPaymentID,
+                Idem = idem,
+                PaymentID = paymentID,
                 PaymentSig = paymentSig
             };
 
