@@ -5,6 +5,11 @@ namespace Gluwa.SDK_dotnet.Models
     public sealed class Data
     {
         /// <summary>
+        /// Identifier for the transaction that was provided by the merchant user.
+        /// </summary>
+        public string MerchantOrderID { get; set; }
+
+        /// <summary>
         /// Transaction amount.
         /// </summary>
         public string Amount { get; set; }
