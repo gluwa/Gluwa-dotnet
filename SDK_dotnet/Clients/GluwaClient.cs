@@ -18,8 +18,7 @@ namespace Gluwa.SDK_dotnet.Clients
     /// </summary>
     public sealed class GluwaClient
     {
-        private readonly bool mbSandbox;
-        private readonly string mBaseUrl;
+        private readonly Environment mEnv;
 
         /// <summary>
         /// The constructor
@@ -28,16 +27,23 @@ namespace Gluwa.SDK_dotnet.Clients
         public GluwaClient(
             bool bSandbox = false)
         {
-            mbSandbox = bSandbox;
-
-            if (mbSandbox)
+            if (bSandbox)
             {
-                mBaseUrl = Constants.GLUWA_SANDBOX_API_BASE_URL;
+                mEnv = Environment.Sandbox;
             }
             else
             {
-                mBaseUrl = Constants.GLUWA_API_BASE_URL;
+                mEnv = Environment.Production;
             }
+        }
+
+        /// <summary>
+        /// The constructor.
+        /// </summary>
+        /// <param name="env"></param>
+        public GluwaClient(Environment env)
+        {
+            mEnv = env;
         }
 
         /// <summary>
@@ -57,7 +63,7 @@ namespace Gluwa.SDK_dotnet.Clients
             }
 
             var result = new Result<BalanceResponse, ErrorResponse>();
-            string requestUri = $"{mBaseUrl}/v1/{currency}/Addresses/{address}";
+            string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Addresses/{address}";
 
             try
             {
@@ -118,7 +124,7 @@ namespace Gluwa.SDK_dotnet.Clients
             }
 
             var result = new Result<List<TransactionResponse>, ErrorResponse>();
-            string requestUri = $"{mBaseUrl}/v1/{currency}/Addresses/{address}/Transactions";
+            string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Addresses/{address}/Transactions";
 
             var queryParams = new List<string>();
             if (offset > 0)
@@ -189,7 +195,7 @@ namespace Gluwa.SDK_dotnet.Clients
             }
 
             var result = new Result<TransactionResponse, ErrorResponse>();
-            string requestUri = $"{mBaseUrl}/v1/{currency}/Transactions/{txnHash}";
+            string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Transactions/{txnHash}";
 
             try
             {
@@ -270,13 +276,13 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(target));
             }
-            else if (string.IsNullOrWhiteSpace(getContractAddress(currency, mbSandbox)))
+            else if (string.IsNullOrWhiteSpace(getContractAddress(currency)))
             {
                 throw new ArgumentNullException(nameof(currency));
             }
 
             var result = new Result<bool, ErrorResponse>();
-            var requestUri = $"{mBaseUrl}/v1/Transactions";
+            var requestUri = $"{mEnv.BaseUrl}/v1/Transactions";
 
             Result<FeeResponse, ErrorResponse> getFee = await getFeeAsync(currency);
             if (getFee.IsFailure)
@@ -295,7 +301,7 @@ namespace Gluwa.SDK_dotnet.Clients
 
             ABIEncode abiEncode = new ABIEncode();
             byte[] messageHash = abiEncode.GetSha3ABIEncodedPacked(
-                new ABIValue("address", getContractAddress(currency, mbSandbox)),
+                new ABIValue("address", getContractAddress(currency)),
                 new ABIValue("address", address),
                 new ABIValue("address", target),
                 new ABIValue("uint256", convertAmount),
@@ -350,37 +356,19 @@ namespace Gluwa.SDK_dotnet.Clients
             return result;
         }
 
-        private string getContractAddress(ECurrency currency, bool bSandbox)
+        private string getContractAddress(ECurrency currency)
         {
             switch (currency)
             {
                 case ECurrency.USDG:
-                    if (bSandbox)
-                    {
-                        return Constants.GLUWACOIN_SANDBOX_USDG_CONTRACT_ADDRESS;
-                    }
-                    else
-                    {
-                        return Constants.GLUWACOIN_USDG_CONTRACT_ADDRESS;
-                    }
+                    return mEnv.UsdgContractAddress;
+
                 case ECurrency.KRWG:
-                    if (bSandbox)
-                    {
-                        return Constants.GLUWACOIN_SANDBOX_KRWG_CONTRACT_ADDRESS;
-                    }
-                    else
-                    {
-                        return Constants.GLUWACOIN_KRWG_CONTRACT_ADDRESS;
-                    }
+                    return mEnv.KrwgContractAddress;
+
                 case ECurrency.NGNG:
-                    if (bSandbox)
-                    {
-                        return Constants.GLUWACOIN_SANDBOX_NGNG_CONTRACT_ADDRESS;
-                    }
-                    else
-                    {
-                        return Constants.GLUWACOIN_NGNG_CONTRACT_ADDRESS;
-                    }
+                    return mEnv.NgngContractAddress;
+
                 default:
                     throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
@@ -407,7 +395,7 @@ namespace Gluwa.SDK_dotnet.Clients
         private async Task<Result<FeeResponse, ErrorResponse>> getFeeAsync(ECurrency currency)
         {
             var result = new Result<FeeResponse, ErrorResponse>();
-            string requestUri = $"{mBaseUrl}/v1/{currency}/Fee";
+            string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Fee";
 
             try
             {

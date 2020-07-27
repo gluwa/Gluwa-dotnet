@@ -15,8 +15,7 @@ namespace Gluwa.SDK_dotnet.Clients
     /// </summary>
     public sealed class QRCodeClient
     {
-        private readonly string mBaseUrl;
-        private readonly bool mbSandbox;
+        private Environment mEnv;
 
         /// <summary>
         /// The constructor.
@@ -25,16 +24,23 @@ namespace Gluwa.SDK_dotnet.Clients
         public QRCodeClient(
             bool bSandbox = false)
         {
-            mbSandbox = bSandbox;
-
-            if (mbSandbox)
+            if (bSandbox)
             {
-                mBaseUrl = Constants.GLUWA_SANDBOX_API_BASE_URL;
+                mEnv = Environment.Sandbox;
             }
             else
             {
-                mBaseUrl = Constants.GLUWA_API_BASE_URL;
+                mEnv = Environment.Production;
             }
+        }
+
+        /// <summary>
+        /// The constructor.
+        /// </summary>
+        /// <param name="env"></param>
+        public QRCodeClient(Environment env)
+        {
+            mEnv = env;
         }
 
         /// <summary>
@@ -90,7 +96,7 @@ namespace Gluwa.SDK_dotnet.Clients
             }
 
             var result = new Result<string, ErrorResponse>();
-            var requestUri = $"{mBaseUrl}/v1/QRCode";
+            var requestUri = $"{mEnv.BaseUrl}/v1/QRCode";
 
             var queryParams = new List<string>();
             if (format != null)
