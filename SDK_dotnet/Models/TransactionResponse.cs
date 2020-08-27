@@ -70,5 +70,10 @@ namespace Gluwa.SDK_dotnet.Models
         /// DateTime when the transaction was last updated.
         /// </summary>
         public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary>
+        /// Gluwa's internal transaction ID
+        /// </summary>
+        public Guid? ID { get; set; }
     }
 }
