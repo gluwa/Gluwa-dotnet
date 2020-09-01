@@ -23,6 +23,8 @@ namespace Gluwa.SDK_dotnet.Clients
         private readonly Network mNetwork;
         private readonly string X_REQUEST_SIGNATURE = "X-REQUEST-SIGNATURE";
 
+        private const int MAX_UNSPENTOUTPUTS_COUNT = 5;
+
         /// <summary>
         /// The constructor
         /// </summary>
@@ -49,6 +51,17 @@ namespace Gluwa.SDK_dotnet.Clients
         public GluwaClient(Environment env)
         {
             mEnv = env;
+            if (env.BaseUrl == Environment.Production.BaseUrl 
+                && env.UsdgContractAddress == Environment.Production.UsdgContractAddress 
+                && env.KrwgContractAddress == Environment.Production.KrwgContractAddress 
+                && env.NgngContractAddress == Environment.Production.NgngContractAddress)
+            {
+                mNetwork = Network.Main;
+            }
+            else
+            {
+                mNetwork = Network.TestNet;
+            }
         }
 
         /// <summary>
@@ -75,9 +88,9 @@ namespace Gluwa.SDK_dotnet.Clients
             string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Addresses/{address}";
 
             List<string> queryParams = new List<string>();
-            if (includeUnspentOutputs)
+            queryParams.Add($"includeUnspentOutputs={includeUnspentOutputs}");
+            if (queryParams.Any())
             {
-                queryParams.Add($"includeUnspentOutputs=true");
                 requestUri = $"{requestUri}?{string.Join("&", queryParams)}";
             }
 
@@ -163,11 +176,11 @@ namespace Gluwa.SDK_dotnet.Clients
                 {
                     if (currency == ECurrency.BTC)
                     {
-                        httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, getBTCTimestampSignature(privateKey));
+                        httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, getBtcAddressSignature(privateKey));
                     }
                     else
                     {
-                        httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, getGluwaCoinTimestampSignature(privateKey));
+                        httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, getGluwacoinAddressSignature(privateKey));
                     }
 
                     using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
@@ -227,11 +240,11 @@ namespace Gluwa.SDK_dotnet.Clients
                 {
                     if (currency == ECurrency.BTC)
                     {
-                        httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, getBTCTimestampSignature(privateKey));
+                        httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, getBtcAddressSignature(privateKey));
                     }
                     else
                     {
-                        httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, getGluwaCoinTimestampSignature(privateKey));
+                        httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, getGluwacoinAddressSignature(privateKey));
                     }
 
                     using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
@@ -308,11 +321,7 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(target));
             }
-            else if (string.IsNullOrWhiteSpace(currency.ToString()))
-            {
-                throw new ArgumentNullException(nameof(currency));
-            }
-            else if (paymentID != null)
+            else if (paymentID != null && paymentID != Guid.Empty)
             {
                 if (string.IsNullOrWhiteSpace(paymentSig))
                 {
@@ -336,7 +345,7 @@ namespace Gluwa.SDK_dotnet.Clients
 
             if (currency == ECurrency.BTC)
             {
-                signature = await getBtcSignatureAsync(currency, address, amount, fee, target, privateKey);
+                signature = await getBtcTransactionSignatureAsync(currency, address, amount, fee, target, privateKey);
             }
             else
             {
@@ -344,6 +353,7 @@ namespace Gluwa.SDK_dotnet.Clients
                 {
                     nonce = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString();
                 }
+                signature = getGluwacoinTransactionSignature(currency, amount, fee, nonce, address, target, privateKey);
             }
 
             TransactionRequest bodyParams = new TransactionRequest
@@ -354,7 +364,7 @@ namespace Gluwa.SDK_dotnet.Clients
                 Amount = amount,
                 Fee = getFee.Data.MinimumFee,
                 Source = address,
-                Nonce = nonce.ToString(),
+                Nonce = nonce,
                 MerchantOrderID = merchantOrderID,
                 Note = note,
                 Idem = idem,
@@ -408,43 +418,33 @@ namespace Gluwa.SDK_dotnet.Clients
             }
         }
 
-        private string getGluwaCoinTimestampSignature(string privateKey)
+        private string getGluwacoinAddressSignature(string privateKey)
         {
-            if (string.IsNullOrWhiteSpace(privateKey))
-            {
-                throw new ArgumentNullException(nameof(privateKey));
-            }
-
             var signer = new EthereumMessageSigner();
-            string Timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString();
-            string signature = signer.EncodeUTF8AndSign(Timestamp, new EthECKey(privateKey));
+            string timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString();
+            string signature = signer.EncodeUTF8AndSign(timestamp, new EthECKey(privateKey));
 
-            string gluwaSignature = $"{Timestamp}.{signature}";
+            string gluwaSignature = $"{timestamp}.{signature}";
             byte[] gluwaSignatureByte = Encoding.UTF8.GetBytes(gluwaSignature);
             string encodedData = Convert.ToBase64String(gluwaSignatureByte);
 
             return encodedData;
         }
 
-        private string getBTCTimestampSignature(string privateKey)
+        private string getBtcAddressSignature(string privateKey)
         {
-            if (string.IsNullOrWhiteSpace(privateKey))
-            {
-                throw new ArgumentNullException(nameof(privateKey));
-            }
-
             BitcoinSecret secret = new BitcoinSecret(privateKey, mNetwork);
-            string Timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString();
-            string signature = secret.PrivateKey.SignMessage(Timestamp);
+            string timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString();
+            string signature = secret.PrivateKey.SignMessage(timestamp);
 
-            string signatureToEncode = $"{Timestamp}.{signature}";
+            string signatureToEncode = $"{timestamp}.{signature}";
             byte[] signatureByte = Encoding.UTF8.GetBytes(signatureToEncode);
             string encodedData = Convert.ToBase64String(signatureByte);
 
             return encodedData;
         }
 
-        private string getGluwaCoinSignature(ECurrency currency, string amount, string fee, string nonce, string address, string target, string privateKey)
+        private string getGluwacoinTransactionSignature(ECurrency currency, string amount, string fee, string nonce, string address, string target, string privateKey)
         {
             BigInteger convertAmount = GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
             BigInteger convertFee = GluwacoinConverter.ConvertToGluwacoinBigInteger(fee.ToString());
@@ -465,10 +465,10 @@ namespace Gluwa.SDK_dotnet.Clients
             return signature;
         }
 
-        private async Task<string> getBtcSignatureAsync(ECurrency currency, string address, string amount, string fee, string target, string privateKey)
+        private async Task<string> getBtcTransactionSignatureAsync(ECurrency currency, string address, string amount, string fee, string target, string privateKey)
         {
-            Result<BalanceResponse, ErrorResponse> getUspentOutput = await GetBalanceAsync(currency, address, true);
-            List<UnspentOutput> unspentOutputs = getUspentOutput.Data.UnspentOutputs.OrderByDescending(u => u.Amount).ToList();
+            Result<BalanceResponse, ErrorResponse> getUnspentOutput = await GetBalanceAsync(currency, address, true);
+            List<UnspentOutput> unspentOutputs = getUnspentOutput.Data.UnspentOutputs.OrderByDescending(u => u.Amount).ToList();
 
             Money amountValue = Money.Parse(amount);
             Money feeValue = Money.Parse(fee);
@@ -483,22 +483,25 @@ namespace Gluwa.SDK_dotnet.Clients
             BigInteger unspentOutputTotalAmount = BigInteger.Zero;
             for (int i = 0; i < unspentOutputs.Count; i++)
             {
-                if (totalAmountAndFee > unspentOutputTotalAmount)
-                {
-                    usingUnspentOutputs.Add(unspentOutputs[i]);
-                    Money sumAmount = Money.Parse(unspentOutputs[i].Amount);
-                    unspentOutputTotalAmount += new BigInteger(sumAmount.Satoshi);
-                }
-                else
+                if (unspentOutputTotalAmount >= totalAmountAndFee || i >= MAX_UNSPENTOUTPUTS_COUNT)
                 {
                     break;
                 }
+
+                usingUnspentOutputs.Add(unspentOutputs[i]);
+                Money sumAmount = Money.Parse(unspentOutputs[i].Amount);
+                unspentOutputTotalAmount += new BigInteger(sumAmount.Satoshi);
             }
 
-            List<Coin> conis = new List<Coin>();
+            if (usingUnspentOutputs.Count >= MAX_UNSPENTOUTPUTS_COUNT)
+            {
+                throw new Exception($"Could not find up to {MAX_UNSPENTOUTPUTS_COUNT} BTC unspent outputs that can cover the amount and fee.");
+            }
+
+            List<Coin> coins = new List<Coin>();
             for (int i = 0; i < usingUnspentOutputs.Count; i++)
             {
-                conis.Add(new Coin(
+                coins.Add(new Coin(
                     fromTxHash: new uint256(usingUnspentOutputs[i].TxHash),
                     fromOutputIndex: (uint)usingUnspentOutputs[i].Index,
                     amount: usingUnspentOutputs[i].Amount,
@@ -509,11 +512,16 @@ namespace Gluwa.SDK_dotnet.Clients
             TransactionBuilder builder = mNetwork.CreateTransactionBuilder();
             NBitcoin.Transaction txn = builder
                             .AddKeys(secret)
-                            .AddCoins(conis)
+                            .AddCoins(coins)
                             .Send(targetAddress, amount)
                             .SetChange(sourceAddress)
                             .SendFees(fee)
                             .BuildTransaction(true);
+
+            if (!builder.Verify(txn, out NBitcoin.Policy.TransactionPolicyError[] error))
+            {
+                throw new Exception(string.Join(", ", error.Select(e => e.ToString())));
+            }
 
             string signature = txn.ToHex();
 
