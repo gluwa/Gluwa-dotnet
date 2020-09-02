@@ -51,17 +51,7 @@ namespace Gluwa.SDK_dotnet.Clients
         public GluwaClient(Environment env)
         {
             mEnv = env;
-            if (env.BaseUrl == Environment.Production.BaseUrl 
-                && env.UsdgContractAddress == Environment.Production.UsdgContractAddress 
-                && env.KrwgContractAddress == Environment.Production.KrwgContractAddress 
-                && env.NgngContractAddress == Environment.Production.NgngContractAddress)
-            {
-                mNetwork = Network.Main;
-            }
-            else
-            {
-                mNetwork = Network.TestNet;
-            }
+            mNetwork = env.Network;
         }
 
         /// <summary>
@@ -74,10 +64,7 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <response code="400">Invalid address format.</response>
         /// <response code="500">Server error.</response>
         /// <response code="503">Service unavailable for the specified currency or temporarily.</response>
-        public async Task<Result<BalanceResponse, ErrorResponse>> GetBalanceAsync
-            (ECurrency currency, 
-            string address,
-            bool includeUnspentOutputs = false)
+        public async Task<Result<BalanceResponse, ErrorResponse>> GetBalanceAsync(ECurrency currency, string address, bool includeUnspentOutputs = false)
         {
             if (string.IsNullOrWhiteSpace(address))
             {
@@ -89,6 +76,7 @@ namespace Gluwa.SDK_dotnet.Clients
 
             List<string> queryParams = new List<string>();
             queryParams.Add($"includeUnspentOutputs={includeUnspentOutputs}");
+
             if (queryParams.Any())
             {
                 requestUri = $"{requestUri}?{string.Join("&", queryParams)}";
@@ -321,7 +309,7 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(target));
             }
-            else if (paymentID != null && paymentID != Guid.Empty)
+            else if (paymentID != null)
             {
                 if (string.IsNullOrWhiteSpace(paymentSig))
                 {
@@ -353,6 +341,7 @@ namespace Gluwa.SDK_dotnet.Clients
                 {
                     nonce = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString();
                 }
+
                 signature = getGluwacoinTransactionSignature(currency, amount, fee, nonce, address, target, privateKey);
             }
 
@@ -483,7 +472,12 @@ namespace Gluwa.SDK_dotnet.Clients
             BigInteger unspentOutputTotalAmount = BigInteger.Zero;
             for (int i = 0; i < unspentOutputs.Count; i++)
             {
-                if (unspentOutputTotalAmount >= totalAmountAndFee || i >= MAX_UNSPENTOUTPUTS_COUNT)
+                if (unspentOutputTotalAmount < totalAmountAndFee && i >= MAX_UNSPENTOUTPUTS_COUNT)
+                {
+                    throw new InvalidOperationException($"Could not find up to {MAX_UNSPENTOUTPUTS_COUNT} BTC unspent outputs that can cover the amount and fee.");
+                }
+
+                if (unspentOutputTotalAmount >= totalAmountAndFee)
                 {
                     break;
                 }
@@ -491,11 +485,6 @@ namespace Gluwa.SDK_dotnet.Clients
                 usingUnspentOutputs.Add(unspentOutputs[i]);
                 Money sumAmount = Money.Parse(unspentOutputs[i].Amount);
                 unspentOutputTotalAmount += new BigInteger(sumAmount.Satoshi);
-            }
-
-            if (usingUnspentOutputs.Count >= MAX_UNSPENTOUTPUTS_COUNT)
-            {
-                throw new Exception($"Could not find up to {MAX_UNSPENTOUTPUTS_COUNT} BTC unspent outputs that can cover the amount and fee.");
             }
 
             List<Coin> coins = new List<Coin>();
@@ -520,7 +509,7 @@ namespace Gluwa.SDK_dotnet.Clients
 
             if (!builder.Verify(txn, out NBitcoin.Policy.TransactionPolicyError[] error))
             {
-                throw new Exception(string.Join(", ", error.Select(e => e.ToString())));
+                throw new InvalidOperationException(string.Join(System.Environment.NewLine, error.Select(e => e.ToString())));
             }
 
             string signature = txn.ToHex();
