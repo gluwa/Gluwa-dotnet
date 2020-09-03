@@ -20,7 +20,6 @@ namespace Gluwa.SDK_dotnet.Clients
     public sealed class GluwaClient
     {
         private readonly Environment mEnv;
-        private readonly Network mNetwork;
         private readonly string X_REQUEST_SIGNATURE = "X-REQUEST-SIGNATURE";
 
         private const int MAX_UNSPENTOUTPUTS_COUNT = 5;
@@ -35,12 +34,10 @@ namespace Gluwa.SDK_dotnet.Clients
             if (bSandbox)
             {
                 mEnv = Environment.Sandbox;
-                mNetwork = Network.TestNet;
             }
             else
             {
                 mEnv = Environment.Production;
-                mNetwork = Network.Main;
             }
         }
 
@@ -51,7 +48,6 @@ namespace Gluwa.SDK_dotnet.Clients
         public GluwaClient(Environment env)
         {
             mEnv = env;
-            mNetwork = env.Network;
         }
 
         /// <summary>
@@ -422,7 +418,7 @@ namespace Gluwa.SDK_dotnet.Clients
 
         private string getBtcAddressSignature(string privateKey)
         {
-            BitcoinSecret secret = new BitcoinSecret(privateKey, mNetwork);
+            BitcoinSecret secret = new BitcoinSecret(privateKey, mEnv.Network);
             string timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString();
             string signature = secret.PrivateKey.SignMessage(timestamp);
 
@@ -464,9 +460,9 @@ namespace Gluwa.SDK_dotnet.Clients
             Money totalAmountAndFeeValue = amountValue + feeValue;
             BigInteger totalAmountAndFee = new BigInteger(totalAmountAndFeeValue.Satoshi);
 
-            BitcoinAddress sourceAddress = BitcoinAddress.Create(address, mNetwork);
-            BitcoinAddress targetAddress = BitcoinAddress.Create(target, mNetwork);
-            BitcoinSecret secret = new BitcoinSecret(privateKey, mNetwork);
+            BitcoinAddress sourceAddress = BitcoinAddress.Create(address, mEnv.Network);
+            BitcoinAddress targetAddress = BitcoinAddress.Create(target, mEnv.Network);
+            BitcoinSecret secret = new BitcoinSecret(privateKey, mEnv.Network);
 
             List<UnspentOutput> usingUnspentOutputs = new List<UnspentOutput>();
             BigInteger unspentOutputTotalAmount = BigInteger.Zero;
@@ -498,7 +494,7 @@ namespace Gluwa.SDK_dotnet.Clients
                 ));
             }
 
-            TransactionBuilder builder = mNetwork.CreateTransactionBuilder();
+            TransactionBuilder builder = mEnv.Network.CreateTransactionBuilder();
             NBitcoin.Transaction txn = builder
                             .AddKeys(secret)
                             .AddCoins(coins)
