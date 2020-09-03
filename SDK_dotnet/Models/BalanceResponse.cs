@@ -1,4 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using System.Collections.Generic;
 
 namespace Gluwa.SDK_dotnet.Models
 {
@@ -15,9 +15,8 @@ namespace Gluwa.SDK_dotnet.Models
         public ECurrency? Currency { get; set; }
 
         /// <summary>
-        /// Current nonce for the address. For Gluwacoin currencies only.
+        /// Unspent transaction outputs of the address that can be used to create new transactions. For BTC only.
         /// </summary>
-        [Range(0, ulong.MaxValue)]
-        public ulong? Nonce { get; set; }
+        public List<UnspentOutput> UnspentOutputs { get; set; }
     }
 }
