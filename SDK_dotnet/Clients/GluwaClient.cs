@@ -54,8 +54,8 @@ namespace Gluwa.SDK_dotnet.Clients
         /// Get balance for specified currency.
         /// </summary>
         /// <param name="currency">Currency type.</param>
-        /// <param name="address">Your Gluwacoin public Address.</param>
-        /// /// <param name="includeUnspentOutputs">(For BTC only)
+        /// <param name="address">Your public Address.</param>
+        /// <param name="includeUnspentOutputs">(For BTC only) if "true", the response includes unspent outputs for the address. "false" by default.</param>
         /// <response code="200">Balance and associated currency.</response>
         /// <response code="400">Invalid address format.</response>
         /// <response code="500">Server error.</response>
@@ -109,8 +109,8 @@ namespace Gluwa.SDK_dotnet.Clients
         /// Get a list of transactions for specified currency.
         /// </summary>
         /// <param name="currency">Currency type.</param>
-        /// <param name="address">Your Gluwacoin public Address.</param>
-        /// <param name="privateKey">Your Gluwacoin Private Key.</param>
+        /// <param name="address">Your public Address.</param>
+        /// <param name="privateKey">Your Private Key.</param>
         /// <param name="limit">Number of transactions to include in the result. optional. Defaults to 100.</param> 
         /// <param name="status">Filter by transaction status. Optional. Defaults to Confimred.</param>
         /// <param name="offset">Number of transactions to skip; used for pagination. Optional. Default to 0.</param>
@@ -196,7 +196,7 @@ namespace Gluwa.SDK_dotnet.Clients
         /// Get bitcoin or gluwacoin transaction by hash.
         /// </summary>
         /// <param name="currency">Currency type</param>
-        /// <param name="privateKey">Your Gluwacoin Private Key.</param>
+        /// <param name="privateKey">Your Private Key.</param>
         /// <param name="txnHash">Hash of the transaction on the blockchain.</param>
         /// <response code="200">Transaction response.</response>
         /// <response code="400">Invalid transaction hash format.</response>
@@ -260,8 +260,8 @@ namespace Gluwa.SDK_dotnet.Clients
         /// Create a new Bitcoin or Gluwacoin transaction.
         /// </summary>
         /// <param name="currency">Currency type</param>
-        /// <param name="address">Your Gluwacoin public Address.</param>
-        /// <param name="privateKey">Your Gluwacoin Private Key.</param>
+        /// <param name="address">Your public Address.</param>
+        /// <param name="privateKey">Your Private Key.</param>
         /// <param name="amount">Transaction amount, not including the fee.</param>
         /// <param name="target">The address that the transaction will be sent to.</param>
         /// <param name="merchantOrderID">Identifier for the transaction that was provided by the merchant user. Optional.</param>
