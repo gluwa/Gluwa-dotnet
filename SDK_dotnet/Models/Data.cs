@@ -5,12 +5,12 @@ namespace Gluwa.SDK_dotnet.Models
     public sealed class Data
     {
         /// <summary>
-        /// Identifier for the transaction that was provided by the merchant user.
+        /// The merchant order ID.
         /// </summary>
         public string MerchantOrderID { get; set; }
 
         /// <summary>
-        /// Transaction amount.
+        /// The amount that was received.
         /// </summary>
         public string Amount { get; set; }
 
@@ -21,14 +21,15 @@ namespace Gluwa.SDK_dotnet.Models
         public EEventType? EventType { get; set; }
 
         /// <summary>
-        /// Webhook
+        /// Always Webhook
         /// </summary>
         [Required]
         public ENotificationType? Type { get; set; }
 
         /// <summary>
-        /// Transcation ID
+        /// The ID of the resource. this is the transaction hash.
         /// </summary>
+        [Required]
         public string ResourceID { get; set; }
     }
 }
