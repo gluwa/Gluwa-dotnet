@@ -2,7 +2,7 @@
 
 namespace Gluwa.SDK_dotnet.Models
 {
-    public class V2PayLoad
+    public class PayLoadV2
     {
         /// <summary>
         /// The ID of the webhook.
@@ -28,6 +28,9 @@ namespace Gluwa.SDK_dotnet.Models
         [Required]
         public string EventName { get; set; }
 
+        /// <summary>
+        /// The summary of the webhook.
+        /// </summary>
         [Required]
         public string Summary { get; set; }
 

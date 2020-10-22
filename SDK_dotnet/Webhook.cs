@@ -48,7 +48,7 @@ namespace Gluwa.SDK_dotnet
         /// <param name="payLoad">Payload</param>
         /// <param name="signature">The value of X-REQUEST-SIGNATURE</param>
         /// <param name="webhookSecretKey">Your Webhook Secret.</param>
-        public static bool ValidateWebhookV2(V2PayLoad payLoad, string signature, string webhookSecretKey)
+        public static bool ValidateWebhookV2(PayLoadV2 payLoad, string signature, string webhookSecretKey)
         {
             string payload = Converter.ToJson(payLoad);
 
