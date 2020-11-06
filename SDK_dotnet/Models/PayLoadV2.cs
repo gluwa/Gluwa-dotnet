@@ -2,7 +2,7 @@
 
 namespace Gluwa.SDK_dotnet.Models
 {
-    public class PayLoadV2
+    public sealed class PayLoadV2
     {
         /// <summary>
         /// The ID of the webhook.
@@ -17,7 +17,7 @@ namespace Gluwa.SDK_dotnet.Models
         public string CreatedDateTime { get; set; }
 
         /// <summary>
-        /// The type of the resource. Transaction.
+        /// The type of the resource. Transaction, Exchange.
         /// </summary>
         [Required]
         public EResourceType? ResourceType { get; set; }
