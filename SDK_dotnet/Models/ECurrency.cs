@@ -5,6 +5,7 @@
         USDG,
         KRWG,
         NGNG,
-        BTC
+        BTC,
+        sUSDCG
     }
 }
