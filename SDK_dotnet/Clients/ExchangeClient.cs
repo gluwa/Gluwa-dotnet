@@ -95,16 +95,16 @@ namespace Gluwa.SDK_dotnet.Clients
             var result = new Result<QuoteResponse, ErrorResponse>();
             string requestUri = $"{mEnv.BaseUrl}/v1/Quote";
 
-
             string btcPublicKey = null;
 
-            if (quoteRequest.Conversion == EConversion.BtcKrwg || quoteRequest.Conversion == EConversion.BtcUsdg)
+            if (quoteRequest.Conversion.Value.IsSourceCurrencyBtc())
             {
                 btcPublicKey = Key.Parse(sendingAddressPrivateKey, mEnv.Network).PubKey.ToString();
+
             }
 
-            string sendingAddressSignature = getAddressSignature(sendingAddressPrivateKey, convertCurrency(quoteRequest.Conversion.Value, IsSource: true));
-            string receivingAddressSignature = getAddressSignature(receivingAddressPrivateKey, convertCurrency(quoteRequest.Conversion.Value, IsSource: false));
+            string sendingAddressSignature = GluwaService.GetAddressSignature(sendingAddressPrivateKey, quoteRequest.Conversion.Value.ToSourceCurrency(), mEnv);
+            string receivingAddressSignature = GluwaService.GetAddressSignature(receivingAddressPrivateKey, quoteRequest.Conversion.Value.ToTargetCurrency(), mEnv);
 
             PostQuoteRequest bodyParams = new PostQuoteRequest()
             {
@@ -169,16 +169,15 @@ namespace Gluwa.SDK_dotnet.Clients
             string privateKey,
             AcceptQuoteRequest quoteRequest)
         {
-
             #region
-            if (currency == ECurrency.NGNG)
+            if (currency.IsGluwaExchangeCurrency())
             {
-                throw new ArgumentOutOfRangeException(nameof(currency));
+                throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
 
             foreach (var order in quoteRequest.MatchedOrders)
             {
-                IEnumerable<ValidationResult> validation = quoteRequest.Validate(order, currency);
+                IEnumerable<ValidationResult> validation = quoteRequest.Validate(currency);
 
                 if (validation.Any())
                 {
@@ -202,14 +201,15 @@ namespace Gluwa.SDK_dotnet.Clients
             var result = new Result<AcceptQuoteResponse, ErrorResponse>();
             string requestUri = $"{mEnv.BaseUrl}/v1/Quote";
 
-
             List<MatchedOrderRequest> matchedOrders = new List<MatchedOrderRequest>();
             foreach (var matchedOrder in quoteRequest.MatchedOrders)
             {
-                if (currency == ECurrency.KRWG || currency == ECurrency.USDG)
+                if (currency.IsGluwaCoinCurrency())
                 {
                     BigInteger nonce = new BigInteger(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
-                    string signature = getGluwaTxnSignature(
+                    BigInteger convertExpiryBlockNumber = BigInteger.Parse(matchedOrder.ExpiryBlockNumber);
+
+                    string signature = getGluwacoinReserveTxnSignature(
                         currency,
                         address,
                         matchedOrder.SourceAmount,
@@ -217,7 +217,7 @@ namespace Gluwa.SDK_dotnet.Clients
                         matchedOrder.DestinationAddress,
                         matchedOrder.Executor,
                         nonce,
-                        matchedOrder.ExpiryBlockNumber,
+                        convertExpiryBlockNumber,
                         privateKey);
 
                     MatchedOrderRequest matchedOrderRequest = new MatchedOrderRequest()
@@ -231,7 +231,7 @@ namespace Gluwa.SDK_dotnet.Clients
                 }
                 else
                 {
-                    BTCTxnSignature txnSignature = await getBtcTxnSignatureAsync(
+                    BTCTxnSignature txnSignature = await getBtcTxnSignaturesAsync(
                         currency,
                         address,
                         matchedOrder.SourceAmount,
@@ -310,7 +310,7 @@ namespace Gluwa.SDK_dotnet.Clients
             GetQuotesRequest quoteRequest)
         {
             #region
-            if (currency == ECurrency.NGNG)
+            if (currency.IsGluwaExchangeCurrency())
             {
                 throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
@@ -334,7 +334,6 @@ namespace Gluwa.SDK_dotnet.Clients
             var result = new Result<List<GetQuotesResponse>, ErrorResponse>();
             string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Addresses/{address}/Quotes";
 
-
             var queryParams = new List<string>();
             if (quoteRequest.StartDateTime.HasValue)
             {
@@ -357,7 +356,7 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 using (HttpClient httpClient = new HttpClient())
                 {
-                    httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, getAddressSignature(privateKey, currency));
+                    httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, GluwaService.GetAddressSignature(privateKey, currency, mEnv));
 
                     using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
                     {
@@ -401,7 +400,7 @@ namespace Gluwa.SDK_dotnet.Clients
         public async Task<Result<GetQuoteResponse, ErrorResponse>> GetQuoteAsync(ECurrency currency, string privateKey, Guid? ID)
         {
             #region
-            if (currency == ECurrency.NGNG)
+            if (currency.IsGluwaExchangeCurrency())
             {
                 throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
@@ -419,7 +418,7 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 using (HttpClient httpClient = new HttpClient())
                 {
-                    httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, getAddressSignature(privateKey, currency));
+                    httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, GluwaService.GetAddressSignature(privateKey, currency, mEnv));
 
                     using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
                     {
@@ -446,83 +445,7 @@ namespace Gluwa.SDK_dotnet.Clients
             return result;
         }
 
-        private ECurrency convertCurrency(EConversion conversion, bool IsSource)
-        {
-            if (IsSource)
-            {
-                switch (conversion)
-                {
-                    case EConversion.BtcKrwg:
-                    case EConversion.BtcUsdg:
-                        return ECurrency.BTC;
-
-                    case EConversion.KrwgBtc:
-                    case EConversion.KrwgUsdg:
-                        return ECurrency.KRWG;
-
-                    case EConversion.UsdgBtc:
-                    case EConversion.UsdgKrwg:
-                        return ECurrency.USDG;
-
-                    default:
-                        throw new ArgumentOutOfRangeException($"Unsupported conversion: {conversion}");
-                }
-            }
-            else
-            {
-                switch (conversion)
-                {
-                    case EConversion.UsdgBtc:
-                    case EConversion.KrwgBtc:
-                        return ECurrency.BTC;
-
-                    case EConversion.BtcKrwg:
-                    case EConversion.UsdgKrwg:
-                        return ECurrency.KRWG;
-
-                    case EConversion.BtcUsdg:
-                    case EConversion.KrwgUsdg:
-                        return ECurrency.USDG;
-
-                    default:
-                        throw new ArgumentOutOfRangeException($"Unsupported conversion: {conversion}");
-                }
-            }
-        }
-
-        private string getAddressSignature(string privateKey, ECurrency currency)
-        {
-            if (string.IsNullOrWhiteSpace(privateKey))
-            {
-                throw new ArgumentNullException(nameof(privateKey));
-            }
-
-            string timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString();
-            string signature = null;
-
-            if (currency == ECurrency.BTC)
-            {
-                BitcoinSecret secret = new BitcoinSecret(privateKey, mEnv.Network);
-                signature = secret.PrivateKey.SignMessage(timestamp);
-            }
-            else if (currency == ECurrency.KRWG || currency == ECurrency.USDG)
-            {
-                var signer = new EthereumMessageSigner();
-                signature = signer.EncodeUTF8AndSign(timestamp, new EthECKey(privateKey));
-            }
-            else
-            {
-                throw new ArgumentOutOfRangeException($"Unsupported currecny: {currency}");
-            }
-
-            string signatureToEncode = $"{timestamp}.{signature}";
-            byte[] signatureByte = Encoding.UTF8.GetBytes(signatureToEncode);
-            string encodedData = Convert.ToBase64String(signatureByte);
-
-            return encodedData;
-        }
-
-        private async Task<BTCTxnSignature> getBtcTxnSignatureAsync(
+        private async Task<BTCTxnSignature> getBtcTxnSignaturesAsync(
             ECurrency currency,
             string address,
             string amount,
@@ -625,7 +548,7 @@ namespace Gluwa.SDK_dotnet.Clients
             return bTCTxnSignature;
         }
 
-        private string getGluwaTxnSignature(
+        private string getGluwacoinReserveTxnSignature(
             ECurrency currency,
             string address,
             string amount,
@@ -633,45 +556,28 @@ namespace Gluwa.SDK_dotnet.Clients
             string target,
             string executor,
             BigInteger nonce,
-            string expiryBlockNumber,
+            BigInteger expiryBlockNumber,
             string privateKey)
         {
             BigInteger convertAmount = GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
             BigInteger convertFee = GluwacoinConverter.ConvertToGluwacoinBigInteger(fee);
 
-            BigInteger convertExpiryBlockNumber = BigInteger.Parse(expiryBlockNumber);
-
             ABIEncode abiEncode = new ABIEncode();
             byte[] messageHash = abiEncode.GetSha3ABIEncodedPacked(
-                new ABIValue("address", getContractAddress(currency)),
+                new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
                 new ABIValue("address", address),
                 new ABIValue("address", target),
                 new ABIValue("address", executor),
                 new ABIValue("uint256", convertAmount),
                 new ABIValue("uint256", convertFee),
                 new ABIValue("uint256", nonce),
-                new ABIValue("uint256", convertExpiryBlockNumber)
+                new ABIValue("uint256", expiryBlockNumber)
                 );
 
             EthereumMessageSigner signer = new EthereumMessageSigner();
             string signature = signer.Sign(messageHash, privateKey);
 
             return signature;
-        }
-
-        private string getContractAddress(ECurrency currency)
-        {
-            switch (currency)
-            {
-                case ECurrency.USDG:
-                    return mEnv.UsdgContractAddress;
-
-                case ECurrency.KRWG:
-                    return mEnv.KrwgContractAddress;
-
-                default:
-                    throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
-            }
         }
     }
 }

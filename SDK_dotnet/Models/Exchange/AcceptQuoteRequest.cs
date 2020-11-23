@@ -17,9 +17,9 @@ namespace Gluwa.SDK_dotnet.Models.Exchange
         /// All orders that will fulfill this quote.
         /// </summary>
         [Required]
-        public List<MatchedOrderForQuote> MatchedOrders { get; set; }
+        public List<AcceptQuoteMatchedOrder> MatchedOrders { get; set; }
 
-        public IEnumerable<ValidationResult> Validate(MatchedOrderForQuote matchedOrders, ECurrency currency)
+        public IEnumerable<ValidationResult> Validate(ECurrency currency)
         {
             if (string.IsNullOrWhiteSpace(Checksum))
             {
@@ -31,13 +31,16 @@ namespace Gluwa.SDK_dotnet.Models.Exchange
             }
             else
             {
-                IEnumerable<ValidationResult> validation = matchedOrders.Validate(currency);
-
-                if (validation.Any())
+                foreach (var matchedOrder in MatchedOrders)
                 {
-                    foreach (var item in validation)
+                    IEnumerable<ValidationResult> validation = matchedOrder.Validate(currency);
+
+                    if (validation.Any())
                     {
-                        throw new ArgumentNullException(item.ErrorMessage);
+                        foreach (var item in validation)
+                        {
+                            throw new ArgumentNullException(item.ErrorMessage);
+                        }
                     }
                 }
             }

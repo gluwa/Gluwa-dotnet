@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Gluwa.SDK_dotnet.Models.Exchange
 {
-    public sealed class MatchedOrderForQuote
+    public sealed class AcceptQuoteMatchedOrder
     {
         /// <summary>
         /// Order ID
