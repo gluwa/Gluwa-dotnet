@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Gluwa.SDK_dotnet.Models.Exchange
 {
-    public sealed class GetQuotesRequest
+    public sealed class GetQuotesOptions
     {
         /// <summary>
         /// datetime.If defined, only quotes created after this datetime are included in the response.

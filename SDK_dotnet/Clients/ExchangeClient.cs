@@ -170,7 +170,7 @@ namespace Gluwa.SDK_dotnet.Clients
             AcceptQuoteRequest quoteRequest)
         {
             #region
-            if (currency.IsGluwaExchangeCurrency())
+            if (!currency.IsGluwaExchangeCurrency())
             {
                 throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
@@ -295,6 +295,77 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <param name="currency">The source currency of the quote.</param>
         /// <param name="address">The sending address of the quote.</param>
         /// <param name="privateKey">The privateKey of the sending address.</param>
+        /// <response code="200">array of Quotes.</response>
+        /// <response code="400_InvalidUrlParameters">Invalid URL parameters.</response>
+        /// <response code="403_SignatureMissing">X-REQUEST-SIGNATURE header is missing.</response>
+        /// <response code="403_SignatureExpired">X-REQUEST-SIGNATURE has expired.</response>
+        /// <response code="403_InvalidSignature">Invalid X-REQUEST-SIGNATURE.</response>
+        /// <response code="500">Server error.</response>
+        /// <returns></returns>
+        public async Task<Result<List<GetQuotesResponse>, ErrorResponse>> GetQuotesAsync(
+            ECurrency currency,
+            string address,
+            string privateKey)
+        {
+            #region
+            if (!currency.IsGluwaExchangeCurrency())
+            {
+                throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
+            }
+
+            if (string.IsNullOrWhiteSpace(address))
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+            #endregion
+
+            var result = new Result<List<GetQuotesResponse>, ErrorResponse>();
+            string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Addresses/{address}/Quotes";
+
+            var queryParams = new List<string>();
+            GetQuotesOptions quoteRequest = new GetQuotesOptions();
+
+            queryParams.Add($"offset={quoteRequest.Offset}");
+            queryParams.Add($"limit={quoteRequest.Limit}");
+            requestUri = $"{requestUri}?{string.Join("&", queryParams)}";
+
+            try
+            {
+                using (HttpClient httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, GluwaService.GetAddressSignature(privateKey, currency, mEnv));
+
+                    using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            List<GetQuotesResponse> quoteResponse = await response.Content.ReadAsAsync<List<GetQuotesResponse>>();
+                            result.IsSuccess = true;
+                            result.Data = quoteResponse;
+
+                            return result;
+                        }
+
+                        string contentString = await response.Content.ReadAsStringAsync();
+                        result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
+                    }
+                }
+            }
+            catch (HttpRequestException)
+            {
+                result.IsSuccess = false;
+                result.Error = ResponseHandler.GetExceptionError();
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Get a list of accepted quotes.
+        /// </summary>
+        /// <param name="currency">The source currency of the quote.</param>
+        /// <param name="address">The sending address of the quote.</param>
+        /// <param name="privateKey">The privateKey of the sending address.</param>
         /// <param name="quoteRequest">Request body.</param>
         /// <response code="200">array of Quotes.</response>
         /// <response code="400_InvalidUrlParameters">Invalid URL parameters.</response>
@@ -307,10 +378,10 @@ namespace Gluwa.SDK_dotnet.Clients
             ECurrency currency,
             string address,
             string privateKey,
-            GetQuotesRequest quoteRequest)
+            GetQuotesOptions quoteRequest)
         {
             #region
-            if (currency.IsGluwaExchangeCurrency())
+            if (!currency.IsGluwaExchangeCurrency())
             {
                 throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
@@ -400,7 +471,7 @@ namespace Gluwa.SDK_dotnet.Clients
         public async Task<Result<GetQuoteResponse, ErrorResponse>> GetQuoteAsync(ECurrency currency, string privateKey, Guid? ID)
         {
             #region
-            if (currency.IsGluwaExchangeCurrency())
+            if (!currency.IsGluwaExchangeCurrency())
             {
                 throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
