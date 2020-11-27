@@ -231,7 +231,7 @@ namespace Gluwa.SDK_dotnet.Clients
                 }
                 else
                 {
-                    BTCTxnSignature txnSignature = await getBtcTxnSignaturesAsync(
+                    BtcTxnSignature txnSignature = await getBtcTxnSignaturesAsync(
                         currency,
                         address,
                         matchedOrder.SourceAmount,
@@ -467,7 +467,7 @@ namespace Gluwa.SDK_dotnet.Clients
             return result;
         }
 
-        private async Task<BTCTxnSignature> getBtcTxnSignaturesAsync(
+        private async Task<BtcTxnSignature> getBtcTxnSignaturesAsync(
             ECurrency currency,
             string address,
             string amount,
@@ -560,7 +560,7 @@ namespace Gluwa.SDK_dotnet.Clients
                 .SetChange(reserveAddress)
                 .BuildPSBT(true);
 
-            BTCTxnSignature bTCTxnSignature = new BTCTxnSignature()
+            BtcTxnSignature bTCTxnSignature = new BtcTxnSignature()
             {
                 ReserveTxnSignature = reserveTxSignature.ToHex(),
                 ExecuteTxnSignature = executePsbt.ToHex(),

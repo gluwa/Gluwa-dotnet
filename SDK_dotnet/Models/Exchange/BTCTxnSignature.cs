@@ -1,6 +1,6 @@
 ﻿namespace Gluwa.SDK_dotnet.Models.Exchange
 {
-    internal sealed class BTCTxnSignature
+    internal sealed class BtcTxnSignature
     {
         public string ReserveTxnSignature { get; set; }
 
