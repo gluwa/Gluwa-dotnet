@@ -307,57 +307,8 @@ namespace Gluwa.SDK_dotnet.Clients
             string address,
             string privateKey)
         {
-            #region
-            if (!currency.IsGluwaExchangeCurrency())
-            {
-                throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
-            }
-
-            if (string.IsNullOrWhiteSpace(address))
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-            #endregion
-
-            var result = new Result<List<GetQuotesResponse>, ErrorResponse>();
-            string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Addresses/{address}/Quotes";
-
-            var queryParams = new List<string>();
-            GetQuotesOptions quoteRequest = new GetQuotesOptions();
-
-            queryParams.Add($"offset={quoteRequest.Offset}");
-            queryParams.Add($"limit={quoteRequest.Limit}");
-            requestUri = $"{requestUri}?{string.Join("&", queryParams)}";
-
-            try
-            {
-                using (HttpClient httpClient = new HttpClient())
-                {
-                    httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, GluwaService.GetAddressSignature(privateKey, currency, mEnv));
-
-                    using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
-                    {
-                        if (response.IsSuccessStatusCode)
-                        {
-                            List<GetQuotesResponse> quoteResponse = await response.Content.ReadAsAsync<List<GetQuotesResponse>>();
-                            result.IsSuccess = true;
-                            result.Data = quoteResponse;
-
-                            return result;
-                        }
-
-                        string contentString = await response.Content.ReadAsStringAsync();
-                        result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
-                    }
-                }
-            }
-            catch (HttpRequestException)
-            {
-                result.IsSuccess = false;
-                result.Error = ResponseHandler.GetExceptionError();
-            }
-
-            return result;
+            GetQuotesOptions options = new GetQuotesOptions();
+            return await GetQuotesAsync(currency, address, privateKey, options);
         }
 
         /// <summary>
@@ -378,7 +329,7 @@ namespace Gluwa.SDK_dotnet.Clients
             ECurrency currency,
             string address,
             string privateKey,
-            GetQuotesOptions quoteRequest)
+            GetQuotesOptions options)
         {
             #region
             if (!currency.IsGluwaExchangeCurrency())
@@ -386,7 +337,7 @@ namespace Gluwa.SDK_dotnet.Clients
                 throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
 
-            IEnumerable<ValidationResult> validation = quoteRequest.Validate();
+            IEnumerable<ValidationResult> validation = options.Validate();
 
             if (validation.Any())
             {
@@ -406,21 +357,21 @@ namespace Gluwa.SDK_dotnet.Clients
             string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Addresses/{address}/Quotes";
 
             var queryParams = new List<string>();
-            if (quoteRequest.StartDateTime.HasValue)
+            if (options.StartDateTime.HasValue)
             {
-                queryParams.Add($"startDateTime={quoteRequest.StartDateTime.Value.ToString("o")}");
+                queryParams.Add($"startDateTime={options.StartDateTime.Value.ToString("o")}");
             }
-            if (quoteRequest.EndDateTime.HasValue)
+            if (options.EndDateTime.HasValue)
             {
-                queryParams.Add($"endDateTime={quoteRequest.EndDateTime.Value.ToString("o")}");
+                queryParams.Add($"endDateTime={options.EndDateTime.Value.ToString("o")}");
             }
-            if (quoteRequest.Status.HasValue)
+            if (options.Status.HasValue)
             {
-                queryParams.Add($"status={quoteRequest.Status}");
+                queryParams.Add($"status={options.Status}");
             }
 
-            queryParams.Add($"offset={quoteRequest.Offset}");
-            queryParams.Add($"limit={quoteRequest.Limit}");
+            queryParams.Add($"offset={options.Offset}");
+            queryParams.Add($"limit={options.Limit}");
             requestUri = $"{requestUri}?{string.Join("&", queryParams)}";
 
             try
