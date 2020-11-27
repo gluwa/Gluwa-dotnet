@@ -4,6 +4,8 @@
     {
         TransactionConfirmed,
         TransactionCreated,
-        TransactionFailed
+        TransactionFailed,
+        ExchangeSuccess,
+        ExchangeFailed
     }
 }

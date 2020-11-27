@@ -1,8 +1,8 @@
 ﻿using Gluwa.SDK_dotnet.Error;
 using Gluwa.SDK_dotnet.Models;
 using Gluwa.SDK_dotnet.Utils;
-using Nethereum.ABI;
 using NBitcoin;
+using Nethereum.ABI;
 using Nethereum.Signer;
 using System;
 using System.Collections.Generic;
@@ -158,14 +158,8 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 using (HttpClient httpClient = new HttpClient())
                 {
-                    if (currency == ECurrency.BTC)
-                    {
-                        httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, getBtcAddressSignature(privateKey));
-                    }
-                    else
-                    {
-                        httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, getGluwacoinAddressSignature(privateKey));
-                    }
+
+                    httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, GluwaService.GetAddressSignature(privateKey, currency, mEnv));
 
                     using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
                     {
@@ -222,14 +216,8 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 using (HttpClient httpClient = new HttpClient())
                 {
-                    if (currency == ECurrency.BTC)
-                    {
-                        httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, getBtcAddressSignature(privateKey));
-                    }
-                    else
-                    {
-                        httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, getGluwacoinAddressSignature(privateKey));
-                    }
+
+                    httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, GluwaService.GetAddressSignature(privateKey, currency, mEnv));
 
                     using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
                     {
@@ -385,50 +373,6 @@ namespace Gluwa.SDK_dotnet.Clients
             return result;
         }
 
-        private string getContractAddress(ECurrency currency)
-        {
-            switch (currency)
-            {
-                case ECurrency.USDG:
-                    return mEnv.UsdgContractAddress;
-
-                case ECurrency.KRWG:
-                    return mEnv.KrwgContractAddress;
-
-                case ECurrency.NGNG:
-                    return mEnv.NgngContractAddress;
-
-                default:
-                    throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
-            }
-        }
-
-        private string getGluwacoinAddressSignature(string privateKey)
-        {
-            var signer = new EthereumMessageSigner();
-            string timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString();
-            string signature = signer.EncodeUTF8AndSign(timestamp, new EthECKey(privateKey));
-
-            string gluwaSignature = $"{timestamp}.{signature}";
-            byte[] gluwaSignatureByte = Encoding.UTF8.GetBytes(gluwaSignature);
-            string encodedData = Convert.ToBase64String(gluwaSignatureByte);
-
-            return encodedData;
-        }
-
-        private string getBtcAddressSignature(string privateKey)
-        {
-            BitcoinSecret secret = new BitcoinSecret(privateKey, mEnv.Network);
-            string timestamp = new DateTimeOffset(DateTime.UtcNow).ToUnixTimeSeconds().ToString();
-            string signature = secret.PrivateKey.SignMessage(timestamp);
-
-            string signatureToEncode = $"{timestamp}.{signature}";
-            byte[] signatureByte = Encoding.UTF8.GetBytes(signatureToEncode);
-            string encodedData = Convert.ToBase64String(signatureByte);
-
-            return encodedData;
-        }
-
         private string getGluwacoinTransactionSignature(ECurrency currency, string amount, string fee, string nonce, string address, string target, string privateKey)
         {
             BigInteger convertAmount = GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
@@ -436,7 +380,7 @@ namespace Gluwa.SDK_dotnet.Clients
 
             ABIEncode abiEncode = new ABIEncode();
             byte[] messageHash = abiEncode.GetSha3ABIEncodedPacked(
-                new ABIValue("address", getContractAddress(currency)),
+                new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
                 new ABIValue("address", address),
                 new ABIValue("address", target),
                 new ABIValue("uint256", convertAmount),

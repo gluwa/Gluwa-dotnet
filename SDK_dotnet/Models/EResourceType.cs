@@ -2,6 +2,7 @@
 {
     public enum EResourceType
     {
-        Transaction
+        Transaction,
+        Exchange
     }
 }
