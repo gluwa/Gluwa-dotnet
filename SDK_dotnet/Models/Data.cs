@@ -6,6 +6,16 @@ namespace Gluwa.SDK_dotnet.Models
     public sealed class Data
     {
         /// <summary>
+        /// (Transactions Related Events Only) The merchant order ID.
+        /// </summary>
+        public string MerchantOrderID { get; set; }
+
+        /// <summary>
+        /// (Transactions Related Events Only) The amount that was received.
+        /// </summary>
+        public string Amount { get; set; }
+
+        /// <summary>
         /// TransactionConfirmed or TransactionCreated or TransactionFailed or ExchangeSuccess or ExchangeFailed
         /// </summary>
         [Required]
@@ -26,16 +36,6 @@ namespace Gluwa.SDK_dotnet.Models
         public string ResourceID { get; set; }
 
         /// <summary>
-        /// (Transactions Related Events Only) The merchant order ID.
-        /// </summary>
-        public string MerchantOrderID { get; set; }
-
-        /// <summary>
-        /// (Transactions Related Events Only) The amount that was received.
-        /// </summary>
-        public string Amount { get; set; }
-
-        /// <summary>
         /// (Exchanges Related Events Only) Amount remaining in the order.
         /// </summary>
         public string OrderAmountRemaining { get; set; }
@@ -43,7 +43,7 @@ namespace Gluwa.SDK_dotnet.Models
         /// <summary>
         /// (Exchanges Related Events Only) Conversion symbol for the order.
         /// </summary>
-        public EConversion Conversion { get; set; }
+        public EConversion? Conversion { get; set; }
 
         /// <summary>
         /// (Exchanges Related Events Only) The address where the source amount was sent from.
