@@ -23,6 +23,8 @@ namespace Gluwa.SDK_dotnet.Clients
     {
         private readonly Environment mEnv;
         private readonly string X_REQUEST_SIGNATURE = "X-REQUEST-SIGNATURE";
+        private readonly string AUTHORIZATION = "Authorization";
+        private readonly string BASIC = "Basic";
 
         private readonly int MAX_UNSPENTOUTPUTS_COUNT = 5;
 
@@ -317,7 +319,7 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <param name="currency">The source currency of the quote.</param>
         /// <param name="address">The sending address of the quote.</param>
         /// <param name="privateKey">The privateKey of the sending address.</param>
-        /// <param name="quoteRequest">Request body.</param>
+        /// <param name="options">Request body.</param>
         /// <response code="200">array of Quotes.</response>
         /// <response code="400_InvalidUrlParameters">Invalid URL parameters.</response>
         /// <response code="403_SignatureMissing">X-REQUEST-SIGNATURE header is missing.</response>
@@ -467,6 +469,335 @@ namespace Gluwa.SDK_dotnet.Clients
             return result;
         }
 
+        /// <summary>
+        /// Retrieve all orders.
+        /// </summary>
+        /// <param name="apiKey">Your apiKey.</param>
+        /// <param name="apiSecret">Your apiSecretKey.</param>
+        /// <param name="options">Request body.</param>
+        /// <response code="200">List of orders.</response>
+        /// <response code="400_InvalidUrlParameters">Invalid URL parameters.</response>
+        /// <response code="403">Not authorized to use this endpoint.</response>
+        /// <response code="500">Server error.</response>
+        /// <returns></returns>
+        public async Task<Result<List<GetOrdersResponse>, ErrorResponse>> GetOrdersAsync(string apiKey, string apiSecret, GetOrdersOptions options)
+        {
+            #region
+            IEnumerable<ValidationResult> validation = options.Validate();
+
+            if (validation.Any())
+            {
+                foreach (var item in validation)
+                {
+                    throw new ArgumentNullException(item.ErrorMessage);
+                }
+            }
+            #endregion
+
+            string token = getAuthToken(apiKey, apiSecret);
+
+            var result = new Result<List<GetOrdersResponse>, ErrorResponse>();
+            string requestUri = $"{mEnv.BaseUrl}/v1/Orders";
+
+            var queryParams = new List<string>();
+            if (options.StartDateTime.HasValue)
+            {
+                queryParams.Add($"startDateTime={options.StartDateTime.Value.ToString("o")}");
+            }
+            if (options.EndDateTime.HasValue)
+            {
+                queryParams.Add($"endDateTime={options.EndDateTime.Value.ToString("o")}");
+            }
+            if (options.Status.HasValue)
+            {
+                queryParams.Add($"status={options.Status}");
+            }
+
+            queryParams.Add($"offset={options.Offset}");
+            queryParams.Add($"limit={options.Limit}");
+            requestUri = $"{requestUri}?{string.Join("&", queryParams)}";
+
+            try
+            {
+                using (HttpClient httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Add(AUTHORIZATION, $"{BASIC} {token}");
+
+                    using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            List<GetOrdersResponse> orderResponse = await response.Content.ReadAsAsync<List<GetOrdersResponse>>();
+                            result.IsSuccess = true;
+                            result.Data = orderResponse;
+
+                            return result;
+                        }
+
+                        string contentString = await response.Content.ReadAsStringAsync();
+                        result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
+                    }
+                }
+            }
+            catch (HttpRequestException)
+            {
+                result.IsSuccess = false;
+                result.Error = ResponseHandler.GetExceptionError();
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Retrieve all orders.
+        /// </summary>
+        /// <param name="apiKey">Your apiKey.</param>
+        /// <param name="apiSecret">Your apiSecretKey.</param>
+        /// <response code="200">List of orders.</response>
+        /// <response code="400_InvalidUrlParameters">Invalid URL parameters.</response>
+        /// <response code="403">Not authorized to use this endpoint.</response>
+        /// <response code="500">Server error.</response>
+        /// <returns></returns>
+        public async Task<Result<List<GetOrdersResponse>, ErrorResponse>> GetOrdersAsync(string apiKey, string apiSecret)
+        {
+            GetOrdersOptions options = new GetOrdersOptions();
+            return await GetOrdersAsync(apiKey, apiSecret, options);
+        }
+
+        /// <summary>
+        /// Retrieve an order with specified ID.
+        /// </summary>
+        /// <param name="apiKey">Your apiKey.</param>
+        /// <param name="apiSecret">Your apiSecretKey.</param>
+        /// <param name="ID">The ID of an order.</param>
+        /// <response code="200">The order with a specified ID.</response>
+        /// <response code="400_InvalidUrlParameters">Invalid URL parameters.</response>
+        /// <response code="403">Not authorized to use this endpoint.</response>
+        /// <response code="404">Order is not found.</response>
+        /// <response code="500">Server error.</response>
+        /// <returns></returns>
+        public async Task<Result<GetOrderResponse, ErrorResponse>> GetOrderAsync(string apiKey, string apiSecret, Guid? ID)
+        {
+            #region
+            if (ID == null || ID == Guid.Empty)
+            {
+                throw new ArgumentNullException(nameof(ID));
+            }
+            #endregion
+
+            string token = getAuthToken(apiKey, apiSecret);
+
+            var result = new Result<GetOrderResponse, ErrorResponse>();
+            string requestUri = $"{mEnv.BaseUrl}/v1/Orders/{ID}";
+
+            try
+            {
+                using (HttpClient httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Add(AUTHORIZATION, $"{BASIC} {token}");
+
+                    using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            GetOrderResponse orderResponse = await response.Content.ReadAsAsync<GetOrderResponse>();
+                            result.IsSuccess = true;
+                            result.Data = orderResponse;
+
+                            return result;
+                        }
+
+                        string contentString = await response.Content.ReadAsStringAsync();
+                        result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
+                    }
+                }
+            }
+            catch (HttpRequestException)
+            {
+                result.IsSuccess = false;
+                result.Error = ResponseHandler.GetExceptionError();
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Create a new order.
+        /// </summary>
+        /// <param name="apiKey">Your apiKey.</param>
+        /// <param name="apiSecret">Your apiSecretKey.</param>
+        /// <param name="sendingAddressPrivateKey">The privateKey of the sending address.</param>
+        /// <param name="receivingAddressPrivateKey">The privateKey of the receiving address.</param>
+        /// <param name="orderRequest">Request body.</param>
+        /// <response code="201">Newly created order.</response>
+        /// <response code="400_InvalidUrlParameters">Invalid URL parameters.</response>
+        /// <response code="400_MissingBody">Request body is missing.</response>
+        /// <response code="400_InvalidBody">Request validation errors. See InnerErrors.</response>
+        /// <response code="400_ValidationError">Request validation errors. See InnerErrors.</response>
+        /// <response code="403_Forbidden">Not authorized to use this endpoint.</response>
+        /// <response code="403_WebhookNotFound">Webhook URL to send exchange request is unavailable.</response>
+        /// <response code="500">Server error.</response>
+        /// <response code="503">Service unavailable for the specified conversion.</response>
+        /// <returns></returns>
+        public async Task<Result<CreateOrderResponse, ErrorResponse>> CreateOrderAsync(
+            string apiKey,
+            string apiSecret,
+            string sendingAddressPrivateKey,
+            string receivingAddressPrivateKey,
+            CreateOrderRequest orderRequest)
+        {
+            #region
+            IEnumerable<ValidationResult> validation = orderRequest.Validate();
+
+            if (validation.Any())
+            {
+                foreach (var item in validation)
+                {
+                    throw new ArgumentNullException(item.ErrorMessage);
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(sendingAddressPrivateKey))
+            {
+                throw new ArgumentNullException(nameof(sendingAddressPrivateKey));
+            }
+            else if (string.IsNullOrWhiteSpace(receivingAddressPrivateKey))
+            {
+                throw new ArgumentNullException(nameof(receivingAddressPrivateKey));
+            }
+            #endregion
+
+            string token = getAuthToken(apiKey, apiSecret);
+
+            var result = new Result<CreateOrderResponse, ErrorResponse>();
+            string requestUri = $"{mEnv.BaseUrl}/v1/Orders";
+
+            string btcpublicKey = null;
+
+            if (orderRequest.Conversion.Value.IsSourceCurrencyBtc())
+            {
+                btcpublicKey = Key.Parse(sendingAddressPrivateKey, mEnv.Network).PubKey.ToString();
+            }
+
+            PostOrderRequest bodyParams = new PostOrderRequest()
+            {
+                Conversion = orderRequest.Conversion.ToString(),
+                SendingAddress = orderRequest.SendingAddress,
+                SendingAddressSignature = GluwaService.GetAddressSignature(sendingAddressPrivateKey, orderRequest.Conversion.Value.ToSourceCurrency(), mEnv),
+                ReceivingAddress = orderRequest.ReceivingAddress,
+                ReceivingAddressSignature = GluwaService.GetAddressSignature(receivingAddressPrivateKey, orderRequest.Conversion.Value.ToTargetCurrency(), mEnv),
+                SourceAmount = orderRequest.SourceAmount,
+                Price = orderRequest.Price,
+                BtcPublicKey = btcpublicKey
+            };
+
+            string json = bodyParams.ToJson();
+            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            try
+            {
+                using (HttpClient httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Add(AUTHORIZATION, $"{BASIC} {token}");
+
+                    using (HttpResponseMessage response = await httpClient.PostAsync(requestUri, content))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            CreateOrderResponse orderResponse = await response.Content.ReadAsAsync<CreateOrderResponse>();
+                            result.IsSuccess = true;
+                            result.Data = orderResponse;
+
+                            return result;
+                        }
+
+                        string contentString = await response.Content.ReadAsStringAsync();
+                        result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
+                    }
+                }
+            }
+            catch (HttpRequestException)
+            {
+                result.IsSuccess = false;
+                result.Error = ResponseHandler.GetExceptionError();
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Cancel an order.
+        /// </summary>
+        /// <param name="apiKey">Your apiKey.</param>
+        /// <param name="apiSecret">Your apiSecretKey.</param>
+        /// <param name="ID">Order ID.</param>
+        /// <response code="200">Order is canceled.</response>
+        /// <response code="400_InvalidUrlParameters">Invalid URL parameters.</response>
+        /// <response code="400_MissingBody">Request body is missing.</response>
+        /// <response code="400_InvalidBody">Request validation errors. See InnerErrors.</response>
+        /// <response code="400_ValidationError">Request validation errors. See InnerErrors.</response>
+        /// <response code="403">Not authorized to use this endpoint.</response>
+        /// <response code="404">Order is not found.</response>
+        /// <response code="409">Cannot be canceled.</response>
+        /// <response code="500">Server error.</response>
+        /// <returns></returns>
+        public async Task<Result<bool, ErrorResponse>> CancelOrderAsync(string apiKey, string apiSecret, Guid? ID)
+        {
+            #region
+            if (ID == null || ID == Guid.Empty)
+            {
+                throw new ArgumentNullException(nameof(ID));
+            }
+            #endregion
+
+            string token = getAuthToken(apiKey, apiSecret);
+
+            var result = new Result<bool, ErrorResponse>();
+            string requestUri = $"{mEnv.BaseUrl}/v1/Orders/{ID}";
+
+            CancelOrderRequest bodyParams = new CancelOrderRequest();
+
+            string json = bodyParams.ToJson();
+            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            HttpRequestMessage request = new HttpRequestMessage
+            {
+                Method = new HttpMethod("PATCH"),
+                RequestUri = new Uri(requestUri),
+                Content = content
+            };
+
+            try
+            {
+                using (HttpClient httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Add(AUTHORIZATION, $"{BASIC} {token}");
+
+                    using (HttpResponseMessage response = await httpClient.SendAsync(request))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            result.IsSuccess = true;
+                            result.Data = true;
+
+                            return result;
+                        }
+
+                        string contentString = await response.Content.ReadAsStringAsync();
+                        result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
+                    }
+                }
+            }
+            catch (HttpRequestException)
+            {
+                result.IsSuccess = false;
+                result.Error = ResponseHandler.GetExceptionError();
+            }
+
+            return result;
+
+        }
+
         private async Task<BtcTxnSignature> getBtcTxnSignaturesAsync(
             ECurrency currency,
             string address,
@@ -600,6 +931,22 @@ namespace Gluwa.SDK_dotnet.Clients
             string signature = signer.Sign(messageHash, privateKey);
 
             return signature;
+        }
+
+        private string getAuthToken(string apiKey, string apiSecret)
+        {
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                throw new ArgumentNullException(nameof(apiKey));
+            }
+            else if (string.IsNullOrWhiteSpace(apiSecret))
+            {
+                throw new ArgumentNullException(nameof(apiSecret));
+            }
+
+            string token = Convert.ToBase64String(Encoding.UTF8.GetBytes($"{apiKey}:{apiSecret}"));
+
+            return token;
         }
     }
 }
