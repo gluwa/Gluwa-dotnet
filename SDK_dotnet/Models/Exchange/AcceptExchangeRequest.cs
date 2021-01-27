@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Numerics;
 
 namespace Gluwa.SDK_dotnet.Models.Exchange
 {
@@ -8,7 +10,7 @@ namespace Gluwa.SDK_dotnet.Models.Exchange
         /// <summary>
         /// Excahnge Request ID
         /// </summary>
-        public string ID { get; set; }
+        public Guid? ID { get; set; }
 
         /// <summary>
         /// Conversion symbol for the exchange.
@@ -38,7 +40,7 @@ namespace Gluwa.SDK_dotnet.Models.Exchange
         /// <summary>
         /// Optional. Included only when the source currency is a Gluwacoin currency.
         /// </summary>
-        public string ExpiryBlockNumber { get; set; }
+        public BigInteger? ExpiryBlockNumber { get; set; }
 
         /// <summary>
         /// Optional. Required if the source currency is BTC. 
@@ -52,7 +54,7 @@ namespace Gluwa.SDK_dotnet.Models.Exchange
 
         public IEnumerable<ValidationResult> Validate()
         {
-            if (string.IsNullOrWhiteSpace(ID))
+            if (ID == null || ID == Guid.Empty)
             {
                 yield return new ValidationResult($"{nameof(ID)} parameter is required.", new[] { nameof(ID) });
             }
@@ -92,7 +94,7 @@ namespace Gluwa.SDK_dotnet.Models.Exchange
                 {
                     yield return new ValidationResult($"{nameof(Executor)} parameter is required for source currency ({Conversion.Value.ToSourceCurrency()}).", new[] { nameof(Executor) });
                 }
-                else if (string.IsNullOrWhiteSpace(ExpiryBlockNumber))
+                else if (ExpiryBlockNumber == null || ExpiryBlockNumber == BigInteger.Zero)
                 {
                     yield return new ValidationResult($"{nameof(ExpiryBlockNumber)} parameter is required for source currency ({Conversion.Value.ToSourceCurrency()}).", new[] { nameof(ExpiryBlockNumber) });
                 }

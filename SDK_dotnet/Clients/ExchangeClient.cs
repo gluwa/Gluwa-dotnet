@@ -862,7 +862,7 @@ namespace Gluwa.SDK_dotnet.Clients
             }
             else
             {
-                BigInteger convertExpiryBlockNumber = BigInteger.Parse(exchangeRequest.ExpiryBlockNumber);
+                BigInteger convertExpiryBlockNumber = BigInteger.Parse(exchangeRequest.ExpiryBlockNumber.ToString());
 
                 reserveTxnSinatrue = getGluwacoinReserveTxnSignature(
                     exchangeRequest.Conversion.Value.ToSourceCurrency(),
