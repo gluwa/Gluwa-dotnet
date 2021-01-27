@@ -375,8 +375,19 @@ namespace Gluwa.SDK_dotnet.Clients
 
         private string getGluwacoinTransactionSignature(ECurrency currency, string amount, string fee, string nonce, string address, string target, string privateKey)
         {
-            BigInteger convertAmount = GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
-            BigInteger convertFee = GluwacoinConverter.ConvertToGluwacoinBigInteger(fee.ToString());
+            BigInteger convertAmount = BigInteger.Zero;
+            BigInteger convertFee = BigInteger.Zero;
+
+            if (currency.IsGluwaCoinSideChainCurrency())
+            {
+                convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount);
+                convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee.ToString());
+            }
+            else
+            {
+                convertAmount = GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
+                convertFee = GluwacoinConverter.ConvertToGluwacoinBigInteger(fee.ToString());
+            }
 
             ABIEncode abiEncode = new ABIEncode();
             byte[] messageHash = abiEncode.GetSha3ABIEncodedPacked(

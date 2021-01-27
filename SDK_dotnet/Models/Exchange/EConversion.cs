@@ -7,6 +7,8 @@
         BtcUsdg,
         UsdgBtc,
         BtcKrwg,
-        KrwgBtc
+        KrwgBtc,
+        BtcsUsdcg,
+        sUsdcgBtc,
     }
 }
