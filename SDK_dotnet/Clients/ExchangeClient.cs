@@ -798,6 +798,183 @@ namespace Gluwa.SDK_dotnet.Clients
 
         }
 
+        /// <summary>
+        /// Accept an exchange request.
+        /// <param name="apiKey">Your apiKey.</param>
+        /// <param name="apiSecret">Your apiSecretKey.</param>
+        /// <param name="address"/>The address that funds the source amount.</parm>
+        /// <param name="privateKey">The privateKey of the sending address.</param>
+        /// </summary>
+        /// <returns></returns>
+        public async Task<Result<bool, ErrorResponse>> AcceptExchangeRequestAsync(
+            string apiKey,
+            string apiSecret,
+            string address,
+            string privateKey,
+            AcceptExchangeRequest exchangeRequest)
+        {
+            #region
+            IEnumerable<ValidationResult> validation = exchangeRequest.Validate();
+
+            if (validation.Any())
+            {
+                foreach (var item in validation)
+                {
+                    throw new ArgumentNullException(item.ErrorMessage);
+                }
+            }
+
+            if (string.IsNullOrWhiteSpace(address))
+            {
+                throw new ArgumentNullException(address);
+            }
+            else if (string.IsNullOrWhiteSpace(privateKey))
+            {
+                throw new ArgumentNullException(nameof(privateKey));
+            }
+            #endregion
+
+            string token = getAuthToken(apiKey, apiSecret);
+
+            var result = new Result<bool, ErrorResponse>();
+            string requestUri = $"{mEnv.BaseUrl}/v1/ExchangeRequests/{exchangeRequest.ID}";
+
+            string reserveTxnSinatrue = null;
+            string executeTxnSignature = null;
+            string reclaimTxnSignature = null;
+            BigInteger nonce = new BigInteger(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+
+            if (exchangeRequest.Conversion.Value.IsSourceCurrencyBtc())
+            {
+                BtcTxnSignature txnSignature = await getBtcTxnSignaturesAsync(
+                        exchangeRequest.Conversion.Value.ToSourceCurrency(),
+                        address,
+                        exchangeRequest.SourceAmount,
+                        exchangeRequest.Fee,
+                        exchangeRequest.DestinationAddress,
+                        exchangeRequest.ReservedFundsAddress,
+                        exchangeRequest.ReservedFundsRedeemScript,
+                        privateKey);
+
+                reserveTxnSinatrue = txnSignature.ReserveTxnSignature;
+                executeTxnSignature = txnSignature.ExecuteTxnSignature;
+                reclaimTxnSignature = txnSignature.ReclaimTxnSignature;
+            }
+            else
+            {
+                BigInteger convertExpiryBlockNumber = BigInteger.Parse(exchangeRequest.ExpiryBlockNumber.ToString());
+
+                reserveTxnSinatrue = getGluwacoinReserveTxnSignature(
+                    exchangeRequest.Conversion.Value.ToSourceCurrency(),
+                    address,
+                    exchangeRequest.SourceAmount,
+                    exchangeRequest.Fee,
+                    exchangeRequest.DestinationAddress,
+                    exchangeRequest.Executor,
+                    nonce,
+                    convertExpiryBlockNumber,
+                    privateKey);
+            }
+
+            PatchExchangeRequest bodyParams = new PatchExchangeRequest()
+            {
+                SendingAddress = address,
+                ReserveTxnSignature = reserveTxnSinatrue,
+                Nonce = nonce.ToString(),
+                ExecuteTxnSignature = executeTxnSignature,
+                ReclaimTxnSignature = reclaimTxnSignature
+            };
+
+            string json = bodyParams.ToJson();
+            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            HttpRequestMessage request = new HttpRequestMessage
+            {
+                Method = new HttpMethod("PATCH"),
+                RequestUri = new Uri(requestUri),
+                Content = content
+            };
+
+            try
+            {
+                using (HttpClient httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Add(AUTHORIZATION, $"{BASIC} {token}");
+
+                    using (HttpResponseMessage response = await httpClient.SendAsync(request))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            result.IsSuccess = true;
+                            result.Data = true;
+
+                            return result;
+                        }
+
+                        string contentString = await response.Content.ReadAsStringAsync();
+                        result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
+                    }
+                }
+            }
+            catch (HttpRequestException)
+            {
+                result.IsSuccess = false;
+                result.Error = ResponseHandler.GetExceptionError();
+            }
+
+            return result;
+        }
+
+        /// <summary>
+        /// Get current order book.
+        /// </summary>
+        /// <param name="conversion">Conversion symbol.</param>
+        /// <param name="limit">Number of orders to include in the result. Ordered by descending price (best price first). Defaults to 100, maximum of 1000.</param>
+        /// <response code="200">List of active orders</response>
+        /// <response code="400">Invalid request parameters.</response>
+        /// <returns></returns>
+        public async Task<Result<List<GetOrderBookResponse>, ErrorResponse>> GetOrderBook(EConversion conversion, uint limit = 100)
+        {
+            var result = new Result<List<GetOrderBookResponse>, ErrorResponse>();
+            string requestUri = $"{mEnv.BaseUrl}/v1/OrderBook/{conversion}";
+
+            List<string> queryParams = new List<string>();
+            queryParams.Add($"limit={limit}");
+
+            if (queryParams.Any())
+            {
+                requestUri = $"{requestUri}?{string.Join("&", queryParams)}";
+            }
+
+            try
+            {
+                using (HttpClient httpClient = new HttpClient())
+                {
+                    using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            List<GetOrderBookResponse> orderBookResponse = await response.Content.ReadAsAsync<List<GetOrderBookResponse>>();
+                            result.IsSuccess = true;
+                            result.Data = orderBookResponse;
+
+                            return result;
+                        }
+
+                        string contentString = await response.Content.ReadAsStringAsync();
+                        result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
+                    }
+                }
+            }
+            catch (HttpRequestException)
+            {
+                result.IsSuccess = false;
+                result.Error = ResponseHandler.GetExceptionError();
+            }
+
+            return result;
+        }
+
         private async Task<BtcTxnSignature> getBtcTxnSignaturesAsync(
             ECurrency currency,
             string address,
