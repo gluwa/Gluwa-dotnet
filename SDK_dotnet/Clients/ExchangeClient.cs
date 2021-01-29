@@ -1092,7 +1092,7 @@ namespace Gluwa.SDK_dotnet.Clients
             BigInteger convertAmount = BigInteger.Zero;
             BigInteger convertFee = BigInteger.Zero;
 
-            if (currency.IsGluwaCoinSideChainCurrency())
+            if (currency.IsGluwacoinSideChainCurrency())
             {
                 convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount);
                 convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee);
