@@ -11,8 +11,27 @@ namespace Gluwa.SDK_dotnet.Models
                 case ECurrency.KRWG:
                 case ECurrency.USDG:
                 case ECurrency.NGNG:
+                case ECurrency.sUSDCG:
                     return true;
 
+                case ECurrency.BTC:
+                    return false;
+
+                default:
+                    throw new ArgumentOutOfRangeException($"Unsupported currecny: {currency}");
+            }
+        }
+
+        internal static bool IsGluwacoinSideChainCurrency(this ECurrency currency)
+        {
+            switch (currency)
+            {
+                case ECurrency.sUSDCG:
+                    return true;
+
+                case ECurrency.KRWG:
+                case ECurrency.USDG:
+                case ECurrency.NGNG:
                 case ECurrency.BTC:
                     return false;
 
@@ -28,6 +47,7 @@ namespace Gluwa.SDK_dotnet.Models
                 case ECurrency.KRWG:
                 case ECurrency.USDG:
                 case ECurrency.BTC:
+                case ECurrency.sUSDCG:
                     return true;
 
                 case ECurrency.NGNG:

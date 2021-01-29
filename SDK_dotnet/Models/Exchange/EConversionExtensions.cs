@@ -18,7 +18,11 @@ namespace Gluwa.SDK_dotnet.Models.Exchange
 
                 case EConversion.BtcKrwg:
                 case EConversion.BtcUsdg:
+                case EConversion.BtcsUsdcg:
                     return ECurrency.BTC;
+
+                case EConversion.sUsdcgBtc:
+                    return ECurrency.sUSDCG;
 
                 default:
                     throw new ArgumentOutOfRangeException($"No corresponding source currency for {conversion}.");
@@ -31,6 +35,7 @@ namespace Gluwa.SDK_dotnet.Models.Exchange
             {
                 case EConversion.KrwgBtc:
                 case EConversion.UsdgBtc:
+                case EConversion.sUsdcgBtc:
                     return ECurrency.BTC;
 
                 case EConversion.BtcUsdg:
@@ -40,6 +45,9 @@ namespace Gluwa.SDK_dotnet.Models.Exchange
                 case EConversion.BtcKrwg:
                 case EConversion.UsdgKrwg:
                     return ECurrency.KRWG;
+
+                case EConversion.BtcsUsdcg:
+                    return ECurrency.sUSDCG;
 
                 default:
                     throw new ArgumentOutOfRangeException($"No corresponding source currency for {conversion}.");

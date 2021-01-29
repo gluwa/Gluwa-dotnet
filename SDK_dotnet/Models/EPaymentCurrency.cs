@@ -4,6 +4,7 @@
     {
         USDG,
         KRWG,
-        NGNG
+        NGNG,
+        sUSDCG
     }
 }

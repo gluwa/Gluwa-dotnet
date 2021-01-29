@@ -1089,8 +1089,19 @@ namespace Gluwa.SDK_dotnet.Clients
             BigInteger expiryBlockNumber,
             string privateKey)
         {
-            BigInteger convertAmount = GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
-            BigInteger convertFee = GluwacoinConverter.ConvertToGluwacoinBigInteger(fee);
+            BigInteger convertAmount = BigInteger.Zero;
+            BigInteger convertFee = BigInteger.Zero;
+
+            if (currency.IsGluwaCoinSideChainCurrency())
+            {
+                convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount);
+                convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee);
+            }
+            else
+            {
+                convertAmount = GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
+                convertFee = GluwacoinConverter.ConvertToGluwacoinBigInteger(fee);
+            }
 
             ABIEncode abiEncode = new ABIEncode();
             byte[] messageHash = abiEncode.GetSha3ABIEncodedPacked(
