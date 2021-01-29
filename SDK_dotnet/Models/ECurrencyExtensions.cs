@@ -22,7 +22,7 @@ namespace Gluwa.SDK_dotnet.Models
             }
         }
 
-        internal static bool IsGluwaCoinSideChainCurrency(this ECurrency currency)
+        internal static bool IsGluwacoinSideChainCurrency(this ECurrency currency)
         {
             switch (currency)
             {
