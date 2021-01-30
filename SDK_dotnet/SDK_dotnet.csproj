@@ -4,18 +4,16 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <AssemblyName>Gluwa.SDK_dotnet</AssemblyName>
     <RootNamespace>Gluwa.SDK_dotnet</RootNamespace>
-	<PackageId>Gluwa.SDK_dotnet</PackageId>
-	<PackageTags>Gluwa</PackageTags>
-	<Authors>Gluwa</Authors>
-	<Company>Gluwa</Company>
-	<Description>
-		The Gluwa SDK for .NET is a library with powerful features that enable .NET developers to easily make requests to the Gluwa APIs.
-	</Description>
+    <PackageId>Gluwa.SDK_dotnet</PackageId>
+    <PackageTags>Gluwa</PackageTags>
+    <Authors>Gluwa</Authors>
+    <Company>Gluwa</Company>
+    <Description>The Gluwa SDK for .NET is a library with powerful features that enable .NET developers to easily make requests to the Gluwa APIs.</Description>
     <Version Condition=" '$(BUILD_BUILDNUMBER)' == '' ">1.0.0.0</Version>
     <Version Condition=" '$(BUILD_BUILDNUMBER)' != '' ">$(BUILD_BUILDNUMBER)</Version>
-	<PublishRepositoryUrl>true</PublishRepositoryUrl>
-	<EmbedUntrackedSources>true</EmbedUntrackedSources>
-	<ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <EmbedUntrackedSources>true</EmbedUntrackedSources>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,7 +21,7 @@
     <PackageReference Include="NBitcoin" Version="5.0.44" />
     <PackageReference Include="Nethereum.Web3" Version="3.3.0" />
     <PackageReference Include="System.ComponentModel.Annotations" Version="4.6.0" />
-	<PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.0.0" PrivateAssets="All"/>
   </ItemGroup>
 
 </Project>
