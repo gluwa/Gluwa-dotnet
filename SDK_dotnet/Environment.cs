@@ -14,7 +14,8 @@ namespace Gluwa.SDK_dotnet
                     usdgContractAddress: Constants.GLUWACOIN_USDG_CONTRACT_ADDRESS,
                     krwgContractAddress: Constants.GLUWACOIN_KRWG_CONTRACT_ADDRESS,
                     ngngContractAddress: Constants.GLUWACOIN_NGNG_CONTRACT_ADDRESS,
-                    sUsdcgContractAddress : Constants.GLUWACOIN_SUSDCG_CONTRACT_ADDRESS,
+                    sUsdcgContractAddress: Constants.GLUWACOIN_SUSDCG_CONTRACT_ADDRESS,
+                    sNgngContractAddress: Constants.GLUWACOIN_SNGNG_CONTRACT_ADDRESS,
                     network: Network.Main);
 
                 return env;
@@ -31,6 +32,7 @@ namespace Gluwa.SDK_dotnet
                     krwgContractAddress: Constants.GLUWACOIN_SANDBOX_KRWG_CONTRACT_ADDRESS,
                     ngngContractAddress: Constants.GLUWACOIN_SANDBOX_NGNG_CONTRACT_ADDRESS,
                     sUsdcgContractAddress: Constants.GLUWACOIN_SANDBOX_SUSDCG_CONTRACT_ADDRESS,
+                    sNgngContractAddress: Constants.GLUWACOIN_SANDBOX_SNGNG_CONTRACT_ADDRESS,
                     network: Network.TestNet);
 
                 return env;
@@ -47,6 +49,8 @@ namespace Gluwa.SDK_dotnet
 
         public string SUsdcgContractAddress { get; }
 
+        public string SNgngContractAddress { get; }
+
         public Network Network { get; }
 
         protected Environment (
@@ -55,6 +59,7 @@ namespace Gluwa.SDK_dotnet
             string krwgContractAddress,
             string ngngContractAddress,
             string sUsdcgContractAddress,
+            string sNgngContractAddress,
             Network network)
         {
             BaseUrl = baseUrl;
@@ -62,6 +67,7 @@ namespace Gluwa.SDK_dotnet
             KrwgContractAddress = krwgContractAddress;
             NgngContractAddress = ngngContractAddress;
             SUsdcgContractAddress = sUsdcgContractAddress;
+            SNgngContractAddress = sNgngContractAddress;
             Network = network;
         }
     }

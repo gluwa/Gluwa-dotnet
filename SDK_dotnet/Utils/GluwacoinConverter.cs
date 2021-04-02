@@ -10,10 +10,17 @@ namespace Gluwa.SDK_dotnet.Utils
             BigDecimal bigDecimalAmount = BigDecimal.Parse(amount);
             return BigInteger.Parse((bigDecimalAmount * new BigDecimal(1, 18)).Floor().ToString());
         }
+
         public static BigInteger ConvertToGluwacoinSideChainBigInteger(string amount)
         {
             BigDecimal bigDecimalAmount = BigDecimal.Parse(amount);
             return BigInteger.Parse((bigDecimalAmount * new BigDecimal(1, 6)).Floor().ToString());
+        }
+
+        public static BigInteger ConvertToGluwacoinSideChainNgngBigInteger(string amount)
+        {
+            BigDecimal bigDecimalAmount = BigDecimal.Parse(amount);
+            return BigInteger.Parse((bigDecimalAmount * new BigDecimal(1, 18)).Floor().ToString());
         }
     }
 }
