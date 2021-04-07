@@ -382,13 +382,13 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 if(currency == ECurrency.sNGNG)
                 {
-                    convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainNgngBigInteger(amount);
-                    convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainNgngBigInteger(fee.ToString());
+                    convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount);
+                    convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee.ToString());
                 }
                 else if (currency == ECurrency.sUSDCG)
                 {
-                    convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount);
-                    convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee.ToString());
+                    convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount, 6);
+                    convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee.ToString(), 6);
                 }
             }
             else

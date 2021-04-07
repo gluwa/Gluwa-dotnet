@@ -1094,8 +1094,8 @@ namespace Gluwa.SDK_dotnet.Clients
 
             if (currency.IsGluwacoinSideChainCurrency())
             {
-                convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount);
-                convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee);
+                convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount, 6);
+                convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee, 6);
             }
             else
             {
