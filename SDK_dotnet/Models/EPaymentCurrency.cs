@@ -5,6 +5,7 @@
         USDG,
         KRWG,
         NGNG,
-        sUSDCG
+        sUSDCG,
+        sNGNG
     }
 }

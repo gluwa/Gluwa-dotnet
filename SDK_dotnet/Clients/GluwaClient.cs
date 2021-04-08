@@ -380,8 +380,16 @@ namespace Gluwa.SDK_dotnet.Clients
 
             if (currency.IsGluwacoinSideChainCurrency())
             {
-                convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount);
-                convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee.ToString());
+                if(currency == ECurrency.sNGNG)
+                {
+                    convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount, currency);
+                    convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee.ToString(), currency);
+                }
+                else if (currency == ECurrency.sUSDCG)
+                {
+                    convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount, currency);
+                    convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee.ToString(), currency);
+                }
             }
             else
             {

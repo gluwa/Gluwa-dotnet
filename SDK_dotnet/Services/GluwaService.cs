@@ -56,6 +56,9 @@ namespace Gluwa.SDK_dotnet.Utils
                 case ECurrency.sUSDCG:
                     return environment.SUsdcgContractAddress;
 
+                case ECurrency.sNGNG:
+                    return environment.SNgngContractAddress;
+
                 default:
                     throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
