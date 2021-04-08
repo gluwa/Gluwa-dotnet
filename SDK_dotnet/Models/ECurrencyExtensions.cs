@@ -19,7 +19,7 @@ namespace Gluwa.SDK_dotnet.Models
                     return false;
 
                 default:
-                    throw new ArgumentOutOfRangeException($"Unsupported currecny: {currency}");
+                    throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
         }
 
@@ -38,7 +38,7 @@ namespace Gluwa.SDK_dotnet.Models
                     return false;
 
                 default:
-                    throw new ArgumentOutOfRangeException($"Unsupported currecny: {currency}");
+                    throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
         }
 
@@ -57,7 +57,7 @@ namespace Gluwa.SDK_dotnet.Models
                     return false;
 
                 default:
-                    throw new ArgumentOutOfRangeException($"Unsupported currecny: {currency}");
+                    throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
         }
     }

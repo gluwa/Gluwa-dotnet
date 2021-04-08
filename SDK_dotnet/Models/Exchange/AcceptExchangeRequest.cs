@@ -79,7 +79,7 @@ namespace Gluwa.SDK_dotnet.Models.Exchange
             {
                 if (string.IsNullOrWhiteSpace(ReservedFundsAddress))
                 {
-                    yield return new ValidationResult($"{nameof(ReservedFundsAddress)} parameter is required for source currency({Conversion.Value.ToSourceCurrency()}).", new[] { nameof(ReservedFundsAddress) });
+                    yield return new ValidationResult($"{nameof(ReservedFundsAddress)} parameter is required for source currency ({Conversion.Value.ToSourceCurrency()}).", new[] { nameof(ReservedFundsAddress) });
 
                 }
                 else if (string.IsNullOrWhiteSpace(ReservedFundsRedeemScript))
