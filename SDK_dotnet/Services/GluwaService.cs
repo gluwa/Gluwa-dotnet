@@ -30,7 +30,7 @@ namespace Gluwa.SDK_dotnet.Utils
             }
             else
             {
-                throw new ArgumentOutOfRangeException($"Unsupported currecny: {currency}");
+                throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
 
             string signatureToEncode = $"{timestamp}.{signature}";
