@@ -323,7 +323,7 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 if (nonce == null)
                 {
-                    nonce = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString();
+                    nonce = DateTime.UtcNow.Ticks.ToString();
                 }
 
                 signature = getGluwacoinTransactionSignature(currency, amount, fee, nonce, address, target, privateKey);
@@ -404,7 +404,7 @@ namespace Gluwa.SDK_dotnet.Clients
                 new ABIValue("address", target),
                 new ABIValue("uint256", convertAmount),
                 new ABIValue("uint256", convertFee),
-                new ABIValue("uint256", int.Parse(nonce))
+                new ABIValue("uint256", BigInteger.Parse(nonce))
                 );
 
             EthereumMessageSigner signer = new EthereumMessageSigner();
