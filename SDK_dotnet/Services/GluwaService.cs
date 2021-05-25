@@ -2,6 +2,7 @@
 using NBitcoin;
 using Nethereum.Signer;
 using System;
+using System.Security.Cryptography;
 using System.Text;
 
 namespace Gluwa.SDK_dotnet.Utils
@@ -62,6 +63,34 @@ namespace Gluwa.SDK_dotnet.Utils
                 default:
                     throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
+        }
+
+        internal static string GetNonceString()
+        {
+            string nonceString = string.Empty;
+            UInt64 uInt64Nonce = 0;
+            do
+            {
+                uInt64Nonce = NextInt();
+                string stringNonce = uInt64Nonce.ToString();
+
+                nonceString += stringNonce;
+
+            } while (nonceString.Length < 75);
+
+            nonceString = nonceString.Substring(0, 75);
+
+            return nonceString;
+        }
+
+        internal static UInt64 NextInt()
+        {
+            RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
+            byte[] buffer = new byte[8];
+            rng.GetBytes(buffer);
+            UInt64 result = BitConverter.ToUInt64(buffer, 0);
+
+            return result;
         }
     }
 }
