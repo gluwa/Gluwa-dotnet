@@ -65,32 +65,26 @@ namespace Gluwa.SDK_dotnet.Utils
             }
         }
 
-        internal static string GetNonceString()
-        {
-            string nonceString = string.Empty;
-            UInt64 uInt64Nonce = 0;
-            do
-            {
-                uInt64Nonce = NextInt();
-                string stringNonce = uInt64Nonce.ToString();
-
-                nonceString += stringNonce;
-
-            } while (nonceString.Length < 75);
-
-            nonceString = nonceString.Substring(0, 75);
-
-            return nonceString;
-        }
-
-        internal static UInt64 NextInt()
+        internal static string GetNonceString(int nonceDigits = 75)
         {
             RNGCryptoServiceProvider rng = new RNGCryptoServiceProvider();
             byte[] buffer = new byte[8];
-            rng.GetBytes(buffer);
-            UInt64 result = BitConverter.ToUInt64(buffer, 0);
 
-            return result;
+            StringBuilder sb = new StringBuilder();
+            do
+            {
+                rng.GetBytes(buffer);
+                string rngToString = (BitConverter.ToUInt64(buffer, 0)).ToString();
+
+                sb.Append(rngToString);
+
+            } while (sb.Length < nonceDigits);
+
+            rng.Dispose();
+
+            string nonceString = sb.ToString(0, nonceDigits);
+
+            return nonceString;
         }
     }
 }

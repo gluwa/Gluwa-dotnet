@@ -323,7 +323,7 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 if (nonce == null)
                 {
-                    nonce = nonce = GluwaService.GetNonceString();
+                    nonce = GluwaService.GetNonceString();
                 }
 
                 signature = getGluwacoinTransactionSignature(currency, amount, fee, nonce, address, target, privateKey);
