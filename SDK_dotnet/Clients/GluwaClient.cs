@@ -323,7 +323,7 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 if (nonce == null)
                 {
-                    nonce = ((int)(DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalSeconds).ToString();
+                    nonce = GluwaService.GetNonceString();
                 }
 
                 signature = getGluwacoinTransactionSignature(currency, amount, fee, nonce, address, target, privateKey);

@@ -208,7 +208,7 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 if (currency.IsGluwaCoinCurrency())
                 {
-                    BigInteger nonce = new BigInteger(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+                    BigInteger nonce = BigInteger.Parse(GluwaService.GetNonceString());
                     BigInteger convertExpiryBlockNumber = BigInteger.Parse(matchedOrder.ExpiryBlockNumber);
 
                     string signature = getGluwacoinReserveTxnSignature(
@@ -842,7 +842,7 @@ namespace Gluwa.SDK_dotnet.Clients
             string reserveTxnSinatrue = null;
             string executeTxnSignature = null;
             string reclaimTxnSignature = null;
-            BigInteger nonce = new BigInteger(DateTimeOffset.UtcNow.ToUnixTimeMilliseconds());
+            BigInteger nonce = BigInteger.Parse(GluwaService.GetNonceString());
 
             if (exchangeRequest.Conversion.Value.IsSourceCurrencyBtc())
             {
