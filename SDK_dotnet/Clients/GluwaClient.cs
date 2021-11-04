@@ -111,7 +111,7 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <param name="currency">Currency type.</param>
         /// <param name="address">Your public Address.</param>
         /// <param name="privateKey">Your Private Key.</param>
-        /// <param name="limit">Number of transactions to include in the result. optional. Defaults to 100.</param> 
+        /// <param name="limit">Number of transactions to include in the result. optional. Defaults to 100.</param>
         /// <param name="status">Filter by transaction status. Optional. Defaults to Confimred.</param>
         /// <param name="offset">Number of transactions to skip; used for pagination. Optional. Default to 0.</param>
         /// <response code="200">List of transactions associated with the address.</response>
@@ -158,7 +158,6 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 using (HttpClient httpClient = new HttpClient())
                 {
-
                     httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, GluwaService.GetAddressSignature(privateKey, currency, mEnv));
 
                     using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
@@ -216,7 +215,6 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 using (HttpClient httpClient = new HttpClient())
                 {
-
                     httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, GluwaService.GetAddressSignature(privateKey, currency, mEnv));
 
                     using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
@@ -304,7 +302,7 @@ namespace Gluwa.SDK_dotnet.Clients
             var result = new Result<bool, ErrorResponse>();
             var requestUri = $"{mEnv.BaseUrl}/v1/Transactions";
 
-            Result<FeeResponse, ErrorResponse> getFee = await getFeeAsync(currency);
+            Result<FeeResponse, ErrorResponse> getFee = await getFeeAsync(currency, amount);
             if (getFee.IsFailure)
             {
                 result.Error = getFee.Error;
@@ -380,7 +378,7 @@ namespace Gluwa.SDK_dotnet.Clients
 
             if (currency.IsGluwacoinSideChainCurrency())
             {
-                if(currency == ECurrency.sNGNG)
+                if (currency == ECurrency.sNGNG)
                 {
                     convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount, currency);
                     convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee.ToString(), currency);
@@ -476,10 +474,10 @@ namespace Gluwa.SDK_dotnet.Clients
             return signature;
         }
 
-        private async Task<Result<FeeResponse, ErrorResponse>> getFeeAsync(ECurrency currency)
+        private async Task<Result<FeeResponse, ErrorResponse>> getFeeAsync(ECurrency currency, string amount)
         {
             var result = new Result<FeeResponse, ErrorResponse>();
-            string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Fee";
+            string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Fee?amount={amount}";
 
             try
             {
