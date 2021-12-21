@@ -2,11 +2,11 @@
 {
     public enum ECurrency
     {
-        USDG,
-        KRWG,
         NGNG,
         BTC,
         sUSDCG,
-        sNGNG
+        sNGNG,
+        USDCG,
+        GCRE
     }
 }

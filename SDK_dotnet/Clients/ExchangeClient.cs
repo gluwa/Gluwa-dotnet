@@ -102,7 +102,6 @@ namespace Gluwa.SDK_dotnet.Clients
             if (quoteRequest.Conversion.Value.IsSourceCurrencyBtc())
             {
                 btcPublicKey = Key.Parse(sendingAddressPrivateKey, mEnv.Network).PubKey.ToString();
-
             }
 
             string sendingAddressSignature = GluwaService.GetAddressSignature(sendingAddressPrivateKey, quoteRequest.Conversion.Value.ToSourceCurrency(), mEnv);
@@ -795,7 +794,6 @@ namespace Gluwa.SDK_dotnet.Clients
             }
 
             return result;
-
         }
 
         /// <summary>

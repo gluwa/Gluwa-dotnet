@@ -45,17 +45,14 @@ namespace Gluwa.SDK_dotnet.Utils
         {
             switch (currency)
             {
-                case ECurrency.USDG:
-                    return environment.UsdgContractAddress;
-
-                case ECurrency.KRWG:
-                    return environment.KrwgContractAddress;
-
                 case ECurrency.NGNG:
                     return environment.NgngContractAddress;
 
                 case ECurrency.sUSDCG:
                     return environment.SUsdcgContractAddress;
+
+                case ECurrency.USDCG:
+                    return environment.UsdcgContractAddress;
 
                 case ECurrency.sNGNG:
                     return environment.SNgngContractAddress;
@@ -77,7 +74,6 @@ namespace Gluwa.SDK_dotnet.Utils
                 string rngToString = (BitConverter.ToUInt64(buffer, 0)).ToString();
 
                 sb.Append(rngToString);
-
             } while (sb.Length < nonceDigits);
 
             rng.Dispose();
