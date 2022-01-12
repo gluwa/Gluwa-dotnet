@@ -8,10 +8,9 @@ namespace Gluwa.SDK_dotnet.Models
         {
             switch (currency)
             {
-                case ECurrency.KRWG:
-                case ECurrency.USDG:
                 case ECurrency.NGNG:
                 case ECurrency.sUSDCG:
+                case ECurrency.USDCG:
                 case ECurrency.sNGNG:
                     return true;
 
@@ -31,9 +30,8 @@ namespace Gluwa.SDK_dotnet.Models
                 case ECurrency.sNGNG:
                     return true;
 
-                case ECurrency.KRWG:
-                case ECurrency.USDG:
                 case ECurrency.NGNG:
+                case ECurrency.USDCG:
                 case ECurrency.BTC:
                     return false;
 
@@ -46,10 +44,9 @@ namespace Gluwa.SDK_dotnet.Models
         {
             switch (currency)
             {
-                case ECurrency.KRWG:
-                case ECurrency.USDG:
                 case ECurrency.BTC:
                 case ECurrency.sUSDCG:
+                case ECurrency.USDCG:
                     return true;
 
                 case ECurrency.NGNG:

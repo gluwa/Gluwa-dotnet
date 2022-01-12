@@ -397,6 +397,8 @@ namespace Gluwa.SDK_dotnet.Clients
 
             ABIEncode abiEncode = new ABIEncode();
             byte[] messageHash = abiEncode.GetSha3ABIEncodedPacked(
+                new ABIValue("unit8", 4),// Domain 4 for transfer
+                new ABIValue("unit256", 4),// to submit to Rinkeby
                 new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
                 new ABIValue("address", address),
                 new ABIValue("address", target),
