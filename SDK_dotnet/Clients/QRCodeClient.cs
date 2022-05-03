@@ -150,6 +150,105 @@ namespace Gluwa.SDK_dotnet.Clients
             return result;
         }
 
+        /// <summary>
+        /// Generates a one-time use QR code for merchants, used for making a payment transaction. Returns a Base64 string along with the QR code payload.
+        /// </summary>
+        /// <param name="apiKey">Your API Key.</param>
+        /// <param name="secret">Your API Secret.</param>
+        /// <param name="address">Your public address.</param>
+        /// <param name="privateKey">Your private Key.</param>
+        /// <param name="currency">Currency for the payment.</param>
+        /// <param name="amount">Payment amount. Fee will be deducted from this amount when payment request is made.</param>
+        /// <param name="note">Additional information, used by the merchant user. optional.</param>
+        /// <param name="merchantOrderID">Identifier for the payment, used by the merchant user. optional.</param>
+        /// <param name="expiry">Time of expiry for the QR code in seconds. Payment request must be made with this QR code before this time. optional. Defaults to 1800</param>
+        /// <response code="200">Base64 string and a QR code payload.</response> 
+        /// <response code="400_ValidationError">Validation error. Please see inner errors for more details.</response>        
+        /// <response code="400_BadRequestError">API Key and secret request header is missing or invalid.</response>        
+        /// <response code="403_ForbiddenRequestError">Combination of Api Key and Api Secret was not found.</response>        
+        /// <response code="500">Server error.</response>
+        /// <response code="503">Service unavailable for the provided currency.</response>
+        public async Task<Result<QRCodePayloadResponse, ErrorResponse>> GetPaymentQRCodePayLoadAsync(
+            string apiKey,
+            string secret,
+            string address,
+            string privateKey,
+            EPaymentCurrency currency,
+            string amount,
+            string note = null,
+            string merchantOrderID = null,
+            int expiry = 1800
+            )
+        {
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                throw new ArgumentNullException(nameof(apiKey));
+            }
+            else if (string.IsNullOrWhiteSpace(secret))
+            {
+                throw new ArgumentNullException(nameof(secret));
+            }
+            else if (string.IsNullOrWhiteSpace(address))
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+            else if (string.IsNullOrWhiteSpace(privateKey))
+            {
+                throw new ArgumentNullException(nameof(privateKey));
+            }
+            else if (string.IsNullOrWhiteSpace(amount))
+            {
+                throw new ArgumentNullException(nameof(amount));
+            }
+
+            var result = new Result<QRCodePayloadResponse, ErrorResponse>();
+            var requestUri = $"{mEnv.BaseUrl}/v1/QRCode/payload";
+
+            QRCodeRequest bodyParams = new QRCodeRequest()
+            {
+                Signature = getTimestampSignature(privateKey),
+                Currency = currency,
+                Target = address,
+                Amount = amount,
+                Expiry = expiry,
+                Note = note,
+                MerchantOrderID = merchantOrderID
+            };
+
+            string json = bodyParams.ToJson();
+            StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
+
+            byte[] authenticationBytes = Encoding.ASCII.GetBytes($"{apiKey}:{secret}");
+            try
+            {
+                using (HttpClient httpClient = new HttpClient())
+                {
+                    httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Basic",
+                         System.Convert.ToBase64String(authenticationBytes));
+                    using (HttpResponseMessage response = await httpClient.PostAsync(requestUri, content))
+                    {
+                        if (response.IsSuccessStatusCode)
+                        {
+                            result.IsSuccess = true;
+                            result.Data = await response.Content.ReadAsAsync<QRCodePayloadResponse>();
+
+                            return result;
+                        }
+
+                        string contentString = await response.Content.ReadAsStringAsync();
+                        result.Error = ResponseHandler.GetError(response.StatusCode, requestUri, contentString);
+                    }
+                }
+            }
+            catch (HttpRequestException)
+            {
+                result.IsSuccess = false;
+                result.Error = ResponseHandler.GetExceptionError();
+            }
+
+            return result;
+        }
+
         private string getTimestampSignature(string privateKey)
         {
             var signer = new EthereumMessageSigner();
