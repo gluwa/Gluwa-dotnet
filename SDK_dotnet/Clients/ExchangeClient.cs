@@ -88,7 +88,8 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(sendingAddressPrivateKey));
             }
-            else if (string.IsNullOrWhiteSpace(receivingAddressPrivateKey))
+            
+            if (string.IsNullOrWhiteSpace(receivingAddressPrivateKey))
             {
                 throw new ArgumentNullException(nameof(receivingAddressPrivateKey));
             }
@@ -193,7 +194,8 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(address));
             }
-            else if (string.IsNullOrWhiteSpace(privateKey))
+            
+            if (string.IsNullOrWhiteSpace(privateKey))
             {
                 throw new ArgumentNullException(nameof(privateKey));
             }
@@ -660,7 +662,8 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(sendingAddressPrivateKey));
             }
-            else if (string.IsNullOrWhiteSpace(receivingAddressPrivateKey))
+            
+            if (string.IsNullOrWhiteSpace(receivingAddressPrivateKey))
             {
                 throw new ArgumentNullException(nameof(receivingAddressPrivateKey));
             }
@@ -826,7 +829,8 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(address);
             }
-            else if (string.IsNullOrWhiteSpace(privateKey))
+            
+            if (string.IsNullOrWhiteSpace(privateKey))
             {
                 throw new ArgumentNullException(nameof(privateKey));
             }
@@ -1125,7 +1129,8 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(apiKey));
             }
-            else if (string.IsNullOrWhiteSpace(apiSecret))
+            
+            if (string.IsNullOrWhiteSpace(apiSecret))
             {
                 throw new ArgumentNullException(nameof(apiSecret));
             }

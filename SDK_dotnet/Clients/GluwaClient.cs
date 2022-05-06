@@ -131,7 +131,8 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(address));
             }
-            else if (string.IsNullOrWhiteSpace(privateKey))
+            
+            if (string.IsNullOrWhiteSpace(privateKey))
             {
                 throw new ArgumentNullException(nameof(privateKey));
             }
@@ -203,7 +204,8 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(privateKey));
             }
-            else if (string.IsNullOrWhiteSpace(txnHash))
+            
+            if (string.IsNullOrWhiteSpace(txnHash))
             {
                 throw new ArgumentNullException(nameof(txnHash));
             }
@@ -279,19 +281,23 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(address));
             }
-            else if (string.IsNullOrWhiteSpace(privateKey))
+            
+            if (string.IsNullOrWhiteSpace(privateKey))
             {
                 throw new ArgumentNullException(nameof(privateKey));
             }
-            else if (string.IsNullOrWhiteSpace(amount))
+            
+            if (string.IsNullOrWhiteSpace(amount))
             {
                 throw new ArgumentNullException(nameof(amount));
             }
-            else if (string.IsNullOrWhiteSpace(target))
+            
+            if (string.IsNullOrWhiteSpace(target))
             {
                 throw new ArgumentNullException(nameof(target));
             }
-            else if (paymentID != null)
+            
+            if (paymentID != null)
             {
                 if (string.IsNullOrWhiteSpace(paymentSig))
                 {

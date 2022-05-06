@@ -78,19 +78,23 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(apiKey));
             }
-            else if (string.IsNullOrWhiteSpace(secret))
+
+            if (string.IsNullOrWhiteSpace(secret))
             {
                 throw new ArgumentNullException(nameof(secret));
             }
-            else if (string.IsNullOrWhiteSpace(address))
+            
+            if (string.IsNullOrWhiteSpace(address))
             {
                 throw new ArgumentNullException(nameof(address));
             }
-            else if (string.IsNullOrWhiteSpace(privateKey))
+            
+            if (string.IsNullOrWhiteSpace(privateKey))
             {
                 throw new ArgumentNullException(nameof(privateKey));
             }
-            else if (string.IsNullOrWhiteSpace(amount))
+            
+            if (string.IsNullOrWhiteSpace(amount))
             {
                 throw new ArgumentNullException(nameof(amount));
             }
@@ -184,19 +188,23 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(apiKey));
             }
-            else if (string.IsNullOrWhiteSpace(secret))
+            
+            if (string.IsNullOrWhiteSpace(secret))
             {
                 throw new ArgumentNullException(nameof(secret));
             }
-            else if (string.IsNullOrWhiteSpace(address))
+            
+            if (string.IsNullOrWhiteSpace(address))
             {
                 throw new ArgumentNullException(nameof(address));
             }
-            else if (string.IsNullOrWhiteSpace(privateKey))
+            
+            if (string.IsNullOrWhiteSpace(privateKey))
             {
                 throw new ArgumentNullException(nameof(privateKey));
             }
-            else if (string.IsNullOrWhiteSpace(amount))
+            
+            if (string.IsNullOrWhiteSpace(amount))
             {
                 throw new ArgumentNullException(nameof(amount));
             }
