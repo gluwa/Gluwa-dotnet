@@ -74,29 +74,18 @@ namespace Gluwa.SDK_dotnet.Clients
             int expiry = 1800
             )
         {
-            if (string.IsNullOrWhiteSpace(apiKey))
+            List<string> requiredParams = new List<string>
             {
-                throw new ArgumentNullException(nameof(apiKey));
-            }
+                apiKey,
+                secret,
+                address,
+                privateKey,
+                amount
+            };
 
-            if (string.IsNullOrWhiteSpace(secret))
+            foreach (string param in requiredParams)
             {
-                throw new ArgumentNullException(nameof(secret));
-            }
-            
-            if (string.IsNullOrWhiteSpace(address))
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-            
-            if (string.IsNullOrWhiteSpace(privateKey))
-            {
-                throw new ArgumentNullException(nameof(privateKey));
-            }
-            
-            if (string.IsNullOrWhiteSpace(amount))
-            {
-                throw new ArgumentNullException(nameof(amount));
+                Validator.TryValidate(param);
             }
 
             var result = new Result<string, ErrorResponse>();
