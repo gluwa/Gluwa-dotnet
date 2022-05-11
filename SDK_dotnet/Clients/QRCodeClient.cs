@@ -74,7 +74,7 @@ namespace Gluwa.SDK_dotnet.Clients
             int expiry = 1800
             )
         {
-            validationParam(apiKey, secret, address, privateKey, amount);
+            validateParams(apiKey, secret, address, privateKey, amount);
 
             var result = new Result<string, ErrorResponse>();
             var requestUri = $"{mEnv.BaseUrl}/v1/QRCode";
@@ -86,16 +86,7 @@ namespace Gluwa.SDK_dotnet.Clients
                 requestUri = $"{requestUri}?{string.Join("&", queryParams)}";
             }
 
-            QRCodeRequest bodyParams = new QRCodeRequest()
-            {
-                Signature = getTimestampSignature(privateKey),
-                Currency = currency,
-                Target = address,
-                Amount = amount,
-                Expiry = expiry,
-                Note = note,
-                MerchantOrderID = merchantOrderID
-            };
+            QRCodeRequest bodyParams = generateBody(privateKey, currency, address, amount, note, merchantOrderID, expiry);
 
             string json = bodyParams.ToJson();
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -161,21 +152,12 @@ namespace Gluwa.SDK_dotnet.Clients
             int expiry = 1800
             )
         {
-            validationParam(apiKey, secret, address, privateKey, amount);
+            validateParams(apiKey, secret, address, privateKey, amount);
 
             var result = new Result<QRCodePayloadResponse, ErrorResponse>();
             var requestUri = $"{mEnv.BaseUrl}/v1/QRCode/payload";
 
-            QRCodeRequest bodyParams = new QRCodeRequest()
-            {
-                Signature = getTimestampSignature(privateKey),
-                Currency = currency,
-                Target = address,
-                Amount = amount,
-                Expiry = expiry,
-                Note = note,
-                MerchantOrderID = merchantOrderID
-            };
+            QRCodeRequest bodyParams = generateBody(privateKey, currency, address, amount, note, merchantOrderID, expiry);
 
             string json = bodyParams.ToJson();
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -211,30 +193,46 @@ namespace Gluwa.SDK_dotnet.Clients
             return result;
         }
 
-        private bool validationParam(string apiKey, string secret, string address, string privateKey, string amount)
+        private void validateParams(string apiKey, string secret, string address, string privateKey, string amount)
         {
             if (string.IsNullOrWhiteSpace(apiKey))
             {
                 throw new ArgumentNullException(nameof(apiKey));
             }
-            else if (string.IsNullOrWhiteSpace(secret))
+
+            if (string.IsNullOrWhiteSpace(secret))
             {
                 throw new ArgumentNullException(nameof(secret));
             }
-            else if (string.IsNullOrWhiteSpace(address))
+
+            if (string.IsNullOrWhiteSpace(address))
             {
                 throw new ArgumentNullException(nameof(address));
             }
-            else if (string.IsNullOrWhiteSpace(privateKey))
+
+            if (string.IsNullOrWhiteSpace(privateKey))
             {
                 throw new ArgumentNullException(nameof(privateKey));
             }
-            else if (string.IsNullOrWhiteSpace(amount))
+
+            if (string.IsNullOrWhiteSpace(amount))
             {
                 throw new ArgumentNullException(nameof(amount));
             }
+        }
 
-            return true;
+        private QRCodeRequest generateBody(string privateKey, EPaymentCurrency currency, string address, string amount, string note, string merchantOrderID, int? expiry)
+        {
+            return new QRCodeRequest()
+            {
+                Signature = getTimestampSignature(privateKey),
+                Currency = currency,
+                Target = address,
+                Amount = amount,
+                Expiry = expiry,
+                Note = note,
+                MerchantOrderID = merchantOrderID
+            };
         }
 
         private string getTimestampSignature(string privateKey)
