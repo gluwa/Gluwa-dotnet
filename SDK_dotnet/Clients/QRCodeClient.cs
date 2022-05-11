@@ -74,19 +74,7 @@ namespace Gluwa.SDK_dotnet.Clients
             int expiry = 1800
             )
         {
-            List<string> requiredParams = new List<string>
-            {
-                apiKey,
-                secret,
-                address,
-                privateKey,
-                amount
-            };
-
-            foreach (string param in requiredParams)
-            {
-                Validator.TryValidate(param);
-            }
+            validationParam(apiKey, secret, address, privateKey, amount);
 
             var result = new Result<string, ErrorResponse>();
             var requestUri = $"{mEnv.BaseUrl}/v1/QRCode";
@@ -173,19 +161,7 @@ namespace Gluwa.SDK_dotnet.Clients
             int expiry = 1800
             )
         {
-            List<string> requiredParams = new List<string>
-            {
-                apiKey,
-                secret,
-                address,
-                privateKey,
-                amount
-            };
-
-            foreach (string param in requiredParams)
-            {
-                Validator.TryValidate(param);
-            }
+            validationParam(apiKey, secret, address, privateKey, amount);
 
             var result = new Result<QRCodePayloadResponse, ErrorResponse>();
             var requestUri = $"{mEnv.BaseUrl}/v1/QRCode/payload";
@@ -233,6 +209,32 @@ namespace Gluwa.SDK_dotnet.Clients
             }
 
             return result;
+        }
+
+        private bool validationParam(string apiKey, string secret, string address, string privateKey, string amount)
+        {
+            if (string.IsNullOrWhiteSpace(apiKey))
+            {
+                throw new ArgumentNullException(nameof(apiKey));
+            }
+            else if (string.IsNullOrWhiteSpace(secret))
+            {
+                throw new ArgumentNullException(nameof(secret));
+            }
+            else if (string.IsNullOrWhiteSpace(address))
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+            else if (string.IsNullOrWhiteSpace(privateKey))
+            {
+                throw new ArgumentNullException(nameof(privateKey));
+            }
+            else if (string.IsNullOrWhiteSpace(amount))
+            {
+                throw new ArgumentNullException(nameof(amount));
+            }
+
+            return true;
         }
 
         private string getTimestampSignature(string privateKey)
