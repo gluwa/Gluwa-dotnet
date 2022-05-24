@@ -76,12 +76,9 @@ namespace Gluwa.SDK_dotnet.Clients
             #region
             IEnumerable<ValidationResult> validation = quoteRequest.Validate();
 
-            if (validation.Any())
+            foreach (var item in validation)
             {
-                foreach (var item in validation)
-                {
-                    throw new ArgumentNullException(item.ErrorMessage);
-                }
+                throw new ArgumentNullException(item.ErrorMessage);
             }
 
             if (string.IsNullOrWhiteSpace(sendingAddressPrivateKey))
@@ -181,12 +178,9 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 IEnumerable<ValidationResult> validation = quoteRequest.Validate(currency);
 
-                if (validation.Any())
+                foreach (var item in validation)
                 {
-                    foreach (var item in validation)
-                    {
-                        throw new ArgumentNullException(item.ErrorMessage);
-                    }
+                    throw new ArgumentNullException(item.ErrorMessage);
                 }
             }
 
@@ -342,12 +336,9 @@ namespace Gluwa.SDK_dotnet.Clients
 
             IEnumerable<ValidationResult> validation = options.Validate();
 
-            if (validation.Any())
+            foreach (var item in validation)
             {
-                foreach (var item in validation)
-                {
-                    throw new ArgumentNullException(item.ErrorMessage);
-                }
+                throw new ArgumentNullException(item.ErrorMessage);
             }
 
             if (string.IsNullOrWhiteSpace(address))
@@ -486,12 +477,9 @@ namespace Gluwa.SDK_dotnet.Clients
             #region
             IEnumerable<ValidationResult> validation = options.Validate();
 
-            if (validation.Any())
+            foreach (var item in validation)
             {
-                foreach (var item in validation)
-                {
-                    throw new ArgumentNullException(item.ErrorMessage);
-                }
+                throw new ArgumentNullException(item.ErrorMessage);
             }
             #endregion
 
@@ -650,12 +638,9 @@ namespace Gluwa.SDK_dotnet.Clients
             #region
             IEnumerable<ValidationResult> validation = orderRequest.Validate();
 
-            if (validation.Any())
+            foreach (var item in validation)
             {
-                foreach (var item in validation)
-                {
-                    throw new ArgumentNullException(item.ErrorMessage);
-                }
+                throw new ArgumentNullException(item.ErrorMessage);
             }
 
             if (string.IsNullOrWhiteSpace(sendingAddressPrivateKey))
@@ -817,12 +802,9 @@ namespace Gluwa.SDK_dotnet.Clients
             #region
             IEnumerable<ValidationResult> validation = exchangeRequest.Validate();
 
-            if (validation.Any())
+            foreach (var item in validation)
             {
-                foreach (var item in validation)
-                {
-                    throw new ArgumentNullException(item.ErrorMessage);
-                }
+                throw new ArgumentNullException(item.ErrorMessage);
             }
 
             if (string.IsNullOrWhiteSpace(address))
