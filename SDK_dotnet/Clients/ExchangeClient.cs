@@ -76,16 +76,16 @@ namespace Gluwa.SDK_dotnet.Clients
             #region
             IEnumerable<ValidationResult> validation = quoteRequest.Validate();
 
-            foreach (var item in validation)
+            if (validation.Any())
             {
-                throw new ArgumentNullException(item.ErrorMessage);
+                throw new ArgumentNullException(validation.First().ErrorMessage);
             }
 
             if (string.IsNullOrWhiteSpace(sendingAddressPrivateKey))
             {
                 throw new ArgumentNullException(nameof(sendingAddressPrivateKey));
             }
-            
+
             if (string.IsNullOrWhiteSpace(receivingAddressPrivateKey))
             {
                 throw new ArgumentNullException(nameof(receivingAddressPrivateKey));
@@ -178,9 +178,9 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 IEnumerable<ValidationResult> validation = quoteRequest.Validate(currency);
 
-                foreach (var item in validation)
+                if (validation.Any())
                 {
-                    throw new ArgumentNullException(item.ErrorMessage);
+                    throw new ArgumentNullException(validation.First().ErrorMessage);
                 }
             }
 
@@ -188,7 +188,7 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(address));
             }
-            
+
             if (string.IsNullOrWhiteSpace(privateKey))
             {
                 throw new ArgumentNullException(nameof(privateKey));
@@ -336,9 +336,9 @@ namespace Gluwa.SDK_dotnet.Clients
 
             IEnumerable<ValidationResult> validation = options.Validate();
 
-            foreach (var item in validation)
+            if (validation.Any())
             {
-                throw new ArgumentNullException(item.ErrorMessage);
+                throw new ArgumentNullException(validation.First().ErrorMessage);
             }
 
             if (string.IsNullOrWhiteSpace(address))
@@ -477,9 +477,9 @@ namespace Gluwa.SDK_dotnet.Clients
             #region
             IEnumerable<ValidationResult> validation = options.Validate();
 
-            foreach (var item in validation)
+            if (validation.Any())
             {
-                throw new ArgumentNullException(item.ErrorMessage);
+                throw new ArgumentNullException(validation.First().ErrorMessage);
             }
             #endregion
 
@@ -638,16 +638,16 @@ namespace Gluwa.SDK_dotnet.Clients
             #region
             IEnumerable<ValidationResult> validation = orderRequest.Validate();
 
-            foreach (var item in validation)
+            if (validation.Any())
             {
-                throw new ArgumentNullException(item.ErrorMessage);
+                throw new ArgumentNullException(validation.First().ErrorMessage);
             }
 
             if (string.IsNullOrWhiteSpace(sendingAddressPrivateKey))
             {
                 throw new ArgumentNullException(nameof(sendingAddressPrivateKey));
             }
-            
+
             if (string.IsNullOrWhiteSpace(receivingAddressPrivateKey))
             {
                 throw new ArgumentNullException(nameof(receivingAddressPrivateKey));
@@ -802,16 +802,16 @@ namespace Gluwa.SDK_dotnet.Clients
             #region
             IEnumerable<ValidationResult> validation = exchangeRequest.Validate();
 
-            foreach (var item in validation)
+            if (validation.Any())
             {
-                throw new ArgumentNullException(item.ErrorMessage);
+                throw new ArgumentNullException(validation.First().ErrorMessage);
             }
 
             if (string.IsNullOrWhiteSpace(address))
             {
                 throw new ArgumentNullException(address);
             }
-            
+
             if (string.IsNullOrWhiteSpace(privateKey))
             {
                 throw new ArgumentNullException(nameof(privateKey));
@@ -1111,7 +1111,7 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 throw new ArgumentNullException(nameof(apiKey));
             }
-            
+
             if (string.IsNullOrWhiteSpace(apiSecret))
             {
                 throw new ArgumentNullException(nameof(apiSecret));
