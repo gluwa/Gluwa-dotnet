@@ -62,7 +62,7 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <response code="503">Service unavailable for the specified currency or temporarily.</response>
         public async Task<Result<BalanceResponse, ErrorResponse>> GetBalanceAsync(ECurrency currency, string address, bool includeUnspentOutputs = false)
         {
-            validateParams(address);
+            validateParam(address);
 
             var result = new Result<BalanceResponse, ErrorResponse>();
             string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Addresses/{address}";
@@ -124,9 +124,9 @@ namespace Gluwa.SDK_dotnet.Clients
            ETransactionStatusFilter status = ETransactionStatusFilter.Confirmed,
            uint offset = 0)
         {
-            validateParams(address);
+            validateParam(address);
 
-            validateParams(privateKey);
+            validateParam(privateKey);
 
             var result = new Result<List<TransactionResponse>, ErrorResponse>();
             string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Addresses/{address}/Transactions";
@@ -191,9 +191,9 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <response code="503">Service unavailable.</response>
         public async Task<Result<TransactionResponse, ErrorResponse>> GetTransactionDetailsAsync(ECurrency currency, string privateKey, string txnHash)
         {
-            validateParams(privateKey);
+            validateParam(privateKey);
 
-            validateParams(txnHash);
+            validateParam(txnHash);
 
             var result = new Result<TransactionResponse, ErrorResponse>();
             string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Transactions/{txnHash}";
@@ -249,48 +249,14 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <response code="409">A transaction with the same transaction hash, payment ID, or idem already exists.</response>
         /// <response code="500">Server error.</response>
         /// <response code="503">Service unavailable.</response>
-        public async Task<Result<bool, ErrorResponse>> CreateTransactionAsync(
-            ECurrency currency,
-            string address,
-            string privateKey,
-            string amount,
-            string target,
-            string merchantOrderID = null,
-            string note = null,
-            string nonce = null,
-            Guid? idem = null,
-            Guid? paymentID = null,
-            string paymentSig = null)
+        public async Task<Result<bool, ErrorResponse>> CreateTransactionAsync(CreateTransactionRequest request)
         {
-            if (string.IsNullOrWhiteSpace(address))
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-
-            if (string.IsNullOrWhiteSpace(privateKey))
-            {
-                throw new ArgumentNullException(nameof(privateKey));
-            }
-
-            if (string.IsNullOrWhiteSpace(amount))
-            {
-                throw new ArgumentNullException(nameof(amount));
-            }
-
-            if (string.IsNullOrWhiteSpace(target))
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
-
-            if (paymentID != null && string.IsNullOrWhiteSpace(paymentSig))
-            {
-                throw new ArgumentException(nameof(paymentSig));
-            }
+            validateParams(request);
 
             var result = new Result<bool, ErrorResponse>();
             var requestUri = $"{mEnv.BaseUrl}/v1/Transactions";
 
-            Result<FeeResponse, ErrorResponse> getFee = await getFeeAsync(currency, amount);
+            Result<FeeResponse, ErrorResponse> getFee = await getFeeAsync(request.Currency, request.Amount);
             if (getFee.IsFailure)
             {
                 result.Error = getFee.Error;
@@ -301,34 +267,34 @@ namespace Gluwa.SDK_dotnet.Clients
             string fee = getFee.Data.MinimumFee;
             string signature = null;
 
-            if (currency == ECurrency.BTC)
+            if (request.Currency == ECurrency.BTC)
             {
-                signature = await getBtcTransactionSignatureAsync(currency, address, amount, fee, target, privateKey);
+                signature = await getBtcTransactionSignatureAsync(request.Currency, request.Address, request.Amount, fee, request.Target, request.PrivateKey);
             }
             else
             {
-                if (nonce == null)
+                if (request.Nonce == null)
                 {
-                    nonce = GluwaService.GetNonceString();
+                    request.Nonce = GluwaService.GetNonceString();
                 }
 
-                signature = getGluwacoinTransactionSignature(currency, amount, fee, nonce, address, target, privateKey);
+                signature = getGluwacoinTransactionSignature(request.Currency, request.Amount, fee, request.Nonce, request.Address, request.Target, request.PrivateKey);
             }
 
             TransactionRequest bodyParams = new TransactionRequest
             {
                 Signature = signature,
-                Currency = currency,
-                Target = target,
-                Amount = amount,
+                Currency = request.Currency,
+                Target = request.Target,
+                Amount = request.Amount,
                 Fee = getFee.Data.MinimumFee,
-                Source = address,
-                Nonce = nonce,
-                MerchantOrderID = merchantOrderID,
-                Note = note,
-                Idem = idem,
-                PaymentID = paymentID,
-                PaymentSig = paymentSig
+                Source = request.Address,
+                Nonce = request.Nonce,
+                MerchantOrderID = request.MerchantOrderID,
+                Note = request.Note,
+                Idem = request.Idem,
+                PaymentID = request.PaymentID,
+                PaymentSig = request.PaymentSig
             };
 
             string json = bodyParams.ToJson();
@@ -359,11 +325,39 @@ namespace Gluwa.SDK_dotnet.Clients
             return result;
         }
 
-        private void validateParams(string parm)
+        private void validateParam(string parm)
         {
             if (string.IsNullOrWhiteSpace(parm))
             {
                 throw new ArgumentException(nameof(parm));
+            }
+        }
+
+        private void validateParams(CreateTransactionRequest request)
+        {
+            if (string.IsNullOrWhiteSpace(request.Address))
+            {
+                throw new ArgumentNullException(nameof(request.Address));
+            }
+
+            if (string.IsNullOrWhiteSpace(request.PrivateKey))
+            {
+                throw new ArgumentNullException(nameof(request.PrivateKey));
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Amount))
+            {
+                throw new ArgumentNullException(nameof(request.Amount));
+            }
+
+            if (string.IsNullOrWhiteSpace(request.Target))
+            {
+                throw new ArgumentNullException(nameof(request.Target));
+            }
+
+            if (request.PaymentID != null && string.IsNullOrWhiteSpace(request.PaymentSig))
+            {
+                throw new ArgumentException(nameof(request.PaymentSig));
             }
         }
 
