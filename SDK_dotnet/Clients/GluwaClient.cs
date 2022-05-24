@@ -374,13 +374,13 @@ namespace Gluwa.SDK_dotnet.Clients
 
             if (currency.IsGluwacoinSideChainCurrency())
             {
-                convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount, currency);
-                convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee.ToString(), currency);
+                convertAmount += GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount, currency);
+                convertFee += GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee.ToString(), currency);
             }
             else
             {
-                convertAmount = GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
-                convertFee = GluwacoinConverter.ConvertToGluwacoinBigInteger(fee.ToString());
+                convertAmount += GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
+                convertFee += GluwacoinConverter.ConvertToGluwacoinBigInteger(fee.ToString());
             }
 
             ABIEncode abiEncode = new ABIEncode();
