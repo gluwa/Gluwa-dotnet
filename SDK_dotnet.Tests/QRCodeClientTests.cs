@@ -2,6 +2,7 @@ using System.Threading.Tasks;
 using Gluwa.SDK_dotnet.Clients;
 using Gluwa.SDK_dotnet.Models;
 using NUnit.Framework;
+using SDK_dotnet.Tests.Helpers;
 using Assert = NUnit.Framework.Assert;
 
 namespace SDK_dotnet.Tests
@@ -19,8 +20,8 @@ namespace SDK_dotnet.Tests
             
             if (bSandbox)
             {
-                request.ApiKey = "sandbox apiKey";
-                request.Secret = "sandbox secret";
+                request.ApiKey = ConfigurationHelper.GetByKey("apiKey");
+                request.Secret = ConfigurationHelper.GetByKey("apiSecret");
             }
             else
             {
