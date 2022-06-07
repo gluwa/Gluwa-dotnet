@@ -335,25 +335,13 @@ namespace Gluwa.SDK_dotnet.Clients
 
         private void validateParams(CreateTransactionRequest request)
         {
-            if (string.IsNullOrWhiteSpace(request.Address))
-            {
-                throw new ArgumentNullException(nameof(request.Address));
-            }
+            validateParam(request.Address);
 
-            if (string.IsNullOrWhiteSpace(request.PrivateKey))
-            {
-                throw new ArgumentNullException(nameof(request.PrivateKey));
-            }
+            validateParam(request.PrivateKey);
 
-            if (string.IsNullOrWhiteSpace(request.Amount))
-            {
-                throw new ArgumentNullException(nameof(request.Amount));
-            }
+            validateParam(request.Amount);
 
-            if (string.IsNullOrWhiteSpace(request.Target))
-            {
-                throw new ArgumentNullException(nameof(request.Target));
-            }
+            validateParam(request.Target);
 
             if (request.PaymentID != null && string.IsNullOrWhiteSpace(request.PaymentSig))
             {

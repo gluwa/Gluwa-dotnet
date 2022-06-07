@@ -8,6 +8,7 @@ using Nethereum.Signer;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Numerics;
@@ -933,7 +934,7 @@ namespace Gluwa.SDK_dotnet.Clients
             }
         }
 
-        private void validateGuid(Guid guid)
+        private void validateGuid(Guid? guid)
         {
             if (guid == null || guid == Guid.Empty)
             {
@@ -1060,13 +1061,13 @@ namespace Gluwa.SDK_dotnet.Clients
 
             if (currency.IsGluwacoinSideChainCurrency())
             {
-                convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount, currency);
-                convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee, currency);
+                convertAmount += GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount, currency);
+                convertFee += GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee, currency);
             }
             else
             {
-                convertAmount = GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
-                convertFee = GluwacoinConverter.ConvertToGluwacoinBigInteger(fee);
+                convertAmount += GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
+                convertFee += GluwacoinConverter.ConvertToGluwacoinBigInteger(fee);
             }
 
             ABIEncode abiEncode = new ABIEncode();
