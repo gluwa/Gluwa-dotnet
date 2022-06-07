@@ -81,15 +81,9 @@ namespace Gluwa.SDK_dotnet.Clients
                 throw new ArgumentNullException(validation.First().ErrorMessage);
             }
 
-            if (string.IsNullOrWhiteSpace(sendingAddressPrivateKey))
-            {
-                throw new ArgumentNullException(nameof(sendingAddressPrivateKey));
-            }
+            validateParam(sendingAddressPrivateKey);
 
-            if (string.IsNullOrWhiteSpace(receivingAddressPrivateKey))
-            {
-                throw new ArgumentNullException(nameof(receivingAddressPrivateKey));
-            }
+            validateParam(receivingAddressPrivateKey);
             #endregion
 
             var result = new Result<QuoteResponse, ErrorResponse>();
@@ -184,15 +178,9 @@ namespace Gluwa.SDK_dotnet.Clients
                 }
             }
 
-            if (string.IsNullOrWhiteSpace(address))
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            validateParam(address);
 
-            if (string.IsNullOrWhiteSpace(privateKey))
-            {
-                throw new ArgumentNullException(nameof(privateKey));
-            }
+            validateParam(privateKey);
             #endregion
 
             var result = new Result<AcceptQuoteResponse, ErrorResponse>();
@@ -341,10 +329,9 @@ namespace Gluwa.SDK_dotnet.Clients
                 throw new ArgumentNullException(validation.First().ErrorMessage);
             }
 
-            if (string.IsNullOrWhiteSpace(address))
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            validateParam(address);
+
+            validateParam(privateKey);
             #endregion
 
             var result = new Result<List<GetQuotesResponse>, ErrorResponse>();
@@ -421,10 +408,7 @@ namespace Gluwa.SDK_dotnet.Clients
                 throw new ArgumentOutOfRangeException($"Unsupported currency: {currency}");
             }
 
-            if (ID == null || ID == Guid.Empty)
-            {
-                throw new ArgumentNullException(nameof(ID));
-            }
+            validateGuid(ID.Value);
             #endregion
 
             var result = new Result<GetQuoteResponse, ErrorResponse>();
@@ -568,10 +552,7 @@ namespace Gluwa.SDK_dotnet.Clients
         public async Task<Result<GetOrderResponse, ErrorResponse>> GetOrderAsync(string apiKey, string apiSecret, Guid? ID)
         {
             #region
-            if (ID == null || ID == Guid.Empty)
-            {
-                throw new ArgumentNullException(nameof(ID));
-            }
+            validateGuid(ID.Value);
             #endregion
 
             string token = getAuthToken(apiKey, apiSecret);
@@ -643,15 +624,9 @@ namespace Gluwa.SDK_dotnet.Clients
                 throw new ArgumentNullException(validation.First().ErrorMessage);
             }
 
-            if (string.IsNullOrWhiteSpace(sendingAddressPrivateKey))
-            {
-                throw new ArgumentNullException(nameof(sendingAddressPrivateKey));
-            }
+            validateParam(sendingAddressPrivateKey);
 
-            if (string.IsNullOrWhiteSpace(receivingAddressPrivateKey))
-            {
-                throw new ArgumentNullException(nameof(receivingAddressPrivateKey));
-            }
+            validateParam(receivingAddressPrivateKey);
             #endregion
 
             string token = getAuthToken(apiKey, apiSecret);
@@ -731,10 +706,7 @@ namespace Gluwa.SDK_dotnet.Clients
         public async Task<Result<bool, ErrorResponse>> CancelOrderAsync(string apiKey, string apiSecret, Guid? ID)
         {
             #region
-            if (ID == null || ID == Guid.Empty)
-            {
-                throw new ArgumentNullException(nameof(ID));
-            }
+            validateGuid(ID.Value);
             #endregion
 
             string token = getAuthToken(apiKey, apiSecret);
@@ -807,15 +779,9 @@ namespace Gluwa.SDK_dotnet.Clients
                 throw new ArgumentNullException(validation.First().ErrorMessage);
             }
 
-            if (string.IsNullOrWhiteSpace(address))
-            {
-                throw new ArgumentNullException(address);
-            }
+            validateParam(address);
 
-            if (string.IsNullOrWhiteSpace(privateKey))
-            {
-                throw new ArgumentNullException(nameof(privateKey));
-            }
+            validateParam(privateKey);
             #endregion
 
             string token = getAuthToken(apiKey, apiSecret);
@@ -957,6 +923,22 @@ namespace Gluwa.SDK_dotnet.Clients
             }
 
             return result;
+        }
+
+        private void validateParam(string parm)
+        {
+            if (string.IsNullOrWhiteSpace(parm))
+            {
+                throw new ArgumentException(nameof(parm));
+            }
+        }
+
+        private void validateGuid(Guid guid)
+        {
+            if (guid == null || guid == Guid.Empty)
+            {
+                throw new ArgumentNullException(nameof(guid));
+            }
         }
 
         private async Task<BtcTxnSignature> getBtcTxnSignaturesAsync(
