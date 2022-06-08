@@ -20,16 +20,16 @@ namespace SDK_dotnet.Tests
             
             if (bSandbox)
             {
-                request.ApiKey = ConfigurationHelper.GetByKey("apiKey");
-                request.Secret = ConfigurationHelper.GetByKey("apiSecret");
+                request.ApiKey = ConfigurationHelper.GetByKey("sandboxApiKey");
+                request.Secret = ConfigurationHelper.GetByKey("sandboxApiSecret");
             }
             else
             {
-                request.ApiKey = "apiKey";
-                request.Secret = "secret";
+                request.ApiKey = ConfigurationHelper.GetByKey("apiKey");
+                request.Secret = ConfigurationHelper.GetByKey("apiSecret");
             }
-            request.Address = "address";
-            request.PrivateKey = "privateKey";
+            request.Address = ConfigurationHelper.GetByKey("address");
+            request.PrivateKey = ConfigurationHelper.GetByKey("privateKey");
             request.Currency = EPaymentCurrency.sNGNG;
             request.Amount = "1000";
 
@@ -49,16 +49,16 @@ namespace SDK_dotnet.Tests
 
             if (bSandbox)
             {
-                request.ApiKey = "sandbox apiKey";
-                request.Secret = "sandbox secret";
+                request.ApiKey = ConfigurationHelper.GetByKey("sandboxApiKey");
+                request.Secret = ConfigurationHelper.GetByKey("sandboxApiSecret");
             }
             else
             {
-                request.ApiKey = "apiKey";
-                request.Secret = "secret";
+                request.ApiKey = ConfigurationHelper.GetByKey("apiKey");
+                request.Secret = ConfigurationHelper.GetByKey("apiSecret");
             }
-            request.Address = "address";
-            request.PrivateKey = "privateKey";
+            request.Address = ConfigurationHelper.GetByKey("address");
+            request.PrivateKey = ConfigurationHelper.GetByKey("privateKey");
             request.Currency = EPaymentCurrency.sNGNG;
             request.Amount = "1000";
 
