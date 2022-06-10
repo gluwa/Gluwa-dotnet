@@ -366,9 +366,16 @@ namespace Gluwa.SDK_dotnet.Clients
             }
 
             ABIEncode abiEncode = new ABIEncode();
-            byte[] messageHash = abiEncode.GetSha3ABIEncodedPacked(
-                new ABIValue("uint8", 4),// Domain 4 for transfer
-                new ABIValue("uint256", 4),// to submit to Rinkeby
+            byte[] messageHash;
+
+            var chainID = mEnv == Environment.Sandbox ? 4 : 1; // 4 is Rinkeby Testnet | 1 is Mainnet
+
+            // USDCG and sSGDG have different signature requirements
+            if (currency == ECurrency.USDCG)
+            {
+                messageHash = abiEncode.GetSha3ABIEncodedPacked(
+                new ABIValue("uint8", 4),// Domain 4 is for transfer
+                new ABIValue("uint256", chainID),
                 new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
                 new ABIValue("address", address),
                 new ABIValue("address", target),
@@ -376,6 +383,18 @@ namespace Gluwa.SDK_dotnet.Clients
                 new ABIValue("uint256", convertFee),
                 new ABIValue("uint256", BigInteger.Parse(nonce))
                 );
+            }
+            else
+            {
+                messageHash = abiEncode.GetSha3ABIEncodedPacked(
+                new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
+                new ABIValue("address", address),
+                new ABIValue("address", target),
+                new ABIValue("uint256", convertAmount),
+                new ABIValue("uint256", convertFee),
+                new ABIValue("uint256", BigInteger.Parse(nonce))
+                );
+            }
 
             EthereumMessageSigner signer = new EthereumMessageSigner();
             string signature = signer.Sign(messageHash, privateKey);
