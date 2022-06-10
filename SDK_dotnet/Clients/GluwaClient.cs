@@ -281,20 +281,21 @@ namespace Gluwa.SDK_dotnet.Clients
                 signature = getGluwacoinTransactionSignature(request.Currency, request.Amount, fee, request.Nonce, request.Address, request.Target, request.PrivateKey);
             }
 
-            TransactionRequest bodyParams = new TransactionRequest{
-                    Signature = signature,
-                    Currency = request.Currency,
-                    Target = request.Target,
-                    Amount = request.Amount,
-                    Fee = getFee.Data.MinimumFee,
-                    Source = request.Address,
-                    Nonce = request.Nonce,
-                    MerchantOrderID = request.MerchantOrderID,
-                    Note = request.Note,
-                    Idem = request.Idem,
-                    PaymentID = request.PaymentID,
-                    PaymentSig = request.PaymentSig
-                };            
+            TransactionRequest bodyParams = new TransactionRequest
+            {
+                Signature = signature,
+                Currency = request.Currency,
+                Target = request.Target,
+                Amount = request.Amount,
+                Fee = getFee.Data.MinimumFee,
+                Source = request.Address,
+                Nonce = request.Nonce,
+                MerchantOrderID = request.MerchantOrderID,
+                Note = request.Note,
+                Idem = request.Idem,
+                PaymentID = request.PaymentID,
+                PaymentSig = request.PaymentSig
+            };            
 
             string json = bodyParams.ToJson();
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
