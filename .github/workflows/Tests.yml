@@ -1,0 +1,51 @@
+name: Tests
+on:
+  push:
+    branches: [ dev, master, feature/tests-in-repo ]
+  pull_request:
+    branches: [ dev, master ]
+    types: [opened, synchronize, reopened]
+  # Allows you to run this workflow manually from the Actions tab
+  workflow_dispatch:
+    
+jobs:
+  build:
+    name: Build
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 0  # Shallow clones should be disabled for a better relevancy of analysis
+
+      - name: App Settings Variable Substitution
+        uses: microsoft/variable-substitution@v1
+        with:
+          files: 'SDK_dotnet.Tests/appsettings.json'
+        env:
+          API_KEY_PROD: ${{ secrets.API_KEY_PROD }}
+          API_KEY_SANDBOX: ${{ secrets.API_KEY_SANDBOX }}
+          API_KEY_TEST: ${{ secrets.API_KEY_TEST }}
+          API_SECRET_PROD: ${{ secrets.API_SECRET_PROD }}
+          API_SECRET_SANDBOX: ${{ secrets.API_SECRET_SANDBOX }}
+          API_SECRET_TEST: ${{ secrets.API_SECRET_TEST }}
+          DEFAULT_PRIVATE: ${{ secrets.DEFAULT_PRIVATE }}
+          SRC_PRIVATE_BTC_PROD: ${{ secrets.SRC_PRIVATE_BTC_PROD }}
+          SRC_PRIVATE_BTC_SANDBOX: ${{ secrets.SRC_PRIVATE_BTC_SANDBOX }}
+          SRC_PRIVATE_NGNG_PROD: ${{ secrets.SRC_PRIVATE_GENERAL }}
+          SRC_PRIVATE_NGNG_SANDBOX: ${{ secrets.SRC_PRIVATE_GENERAL }}
+          SRC_PRIVATE_sNGNG_PROD: ${{ secrets.SRC_PRIVATE_GENERAL }}
+          SRC_PRIVATE_sNGNG_SANDBOX: ${{ secrets.SRC_PRIVATE_GENERAL }}
+          SRC_PRIVATE_sUSDCG_PROD: ${{ secrets.SRC_PRIVATE_sUSDCG_PROD }}
+          SRC_PRIVATE_sUSDCG_SANDBOX: ${{ secrets.SRC_PRIVATE_sUSDCG_SANDBOX }}
+          TRG_PRIVATE_BTC_PROD: ${{ secrets.TRG_PRIVATE_BTC_PROD }}
+          TRG_PRIVATE_BTC_SANDBOX: ${{ secrets.TRG_PRIVATE_BTC_SANDBOX }}
+          TRG_PRIVATE_sUSDCG_PROD: ${{ secrets.TRG_PRIVATE_GENERAL }}
+          TRG_PRIVATE_sUSDCG_SANDBOX: ${{ secrets.TRG_PRIVATE_GENERAL }}
+
+      - uses: actions/setup-dotnet@v2
+        with:
+          dotnet-version: |
+            3.1
+      
+      - name: Run dotnet tests
+        run: dotnet test

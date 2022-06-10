@@ -325,11 +325,11 @@ namespace Gluwa.SDK_dotnet.Clients
             return result;
         }
 
-        private void validateParam(string parm)
+        private void validateParam(string param)
         {
-            if (string.IsNullOrWhiteSpace(parm))
+            if (string.IsNullOrWhiteSpace(param))
             {
-                throw new ArgumentException(nameof(parm));
+                throw new ArgumentException(nameof(param));
             }
         }
 
@@ -367,8 +367,8 @@ namespace Gluwa.SDK_dotnet.Clients
 
             ABIEncode abiEncode = new ABIEncode();
             byte[] messageHash = abiEncode.GetSha3ABIEncodedPacked(
-                new ABIValue("unit8", 4),// Domain 4 for transfer
-                new ABIValue("unit256", 4),// to submit to Rinkeby
+                new ABIValue("uint8", 4),// Domain 4 for transfer
+                new ABIValue("uint256", 4),// to submit to Rinkeby
                 new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
                 new ABIValue("address", address),
                 new ABIValue("address", target),
