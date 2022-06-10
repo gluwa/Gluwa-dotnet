@@ -281,21 +281,20 @@ namespace Gluwa.SDK_dotnet.Clients
                 signature = getGluwacoinTransactionSignature(request.Currency, request.Amount, fee, request.Nonce, request.Address, request.Target, request.PrivateKey);
             }
 
-            TransactionRequest bodyParams = new TransactionRequest
-            {
-                Signature = signature,
-                Currency = request.Currency,
-                Target = request.Target,
-                Amount = request.Amount,
-                Fee = getFee.Data.MinimumFee,
-                Source = request.Address,
-                Nonce = request.Nonce,
-                MerchantOrderID = request.MerchantOrderID,
-                Note = request.Note,
-                Idem = request.Idem,
-                PaymentID = request.PaymentID,
-                PaymentSig = request.PaymentSig
-            };
+            TransactionRequest bodyParams = new TransactionRequest{
+                    Signature = signature,
+                    Currency = request.Currency,
+                    Target = request.Target,
+                    Amount = request.Amount,
+                    Fee = getFee.Data.MinimumFee,
+                    Source = request.Address,
+                    Nonce = request.Nonce,
+                    MerchantOrderID = request.MerchantOrderID,
+                    Note = request.Note,
+                    Idem = request.Idem,
+                    PaymentID = request.PaymentID,
+                    PaymentSig = request.PaymentSig
+                };            
 
             string json = bodyParams.ToJson();
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
@@ -366,9 +365,16 @@ namespace Gluwa.SDK_dotnet.Clients
             }
 
             ABIEncode abiEncode = new ABIEncode();
-            byte[] messageHash = abiEncode.GetSha3ABIEncodedPacked(
+            byte[] messageHash;
+
+            var chainID = mEnv == Environment.Sandbox ? 4 : 1;
+
+            // USDCG and sSGDG have different signature requirements
+            if (currency == ECurrency.USDCG || currency == ECurrency.sSGDG)
+            {
+                messageHash = abiEncode.GetSha3ABIEncodedPacked(
                 new ABIValue("uint8", 4),// Domain 4 for transfer
-                new ABIValue("uint256", 4),// to submit to Rinkeby
+                new ABIValue("uint256", chainID),// to submit to Rinkeby
                 new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
                 new ABIValue("address", address),
                 new ABIValue("address", target),
@@ -376,6 +382,18 @@ namespace Gluwa.SDK_dotnet.Clients
                 new ABIValue("uint256", convertFee),
                 new ABIValue("uint256", BigInteger.Parse(nonce))
                 );
+            }
+            else
+            {
+                messageHash = abiEncode.GetSha3ABIEncodedPacked(
+                new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
+                new ABIValue("address", address),
+                new ABIValue("address", target),
+                new ABIValue("uint256", convertAmount),
+                new ABIValue("uint256", convertFee),
+                new ABIValue("uint256", BigInteger.Parse(nonce))
+                );
+            }
 
             EthereumMessageSigner signer = new EthereumMessageSigner();
             string signature = signer.Sign(messageHash, privateKey);
