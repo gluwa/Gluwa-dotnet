@@ -7,7 +7,6 @@
         sUSDCG,
         sNGNG,
         USDCG,
-        GCRE,
-        sSGDG
+        GCRE
     }
 }
