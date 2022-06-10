@@ -348,3 +348,8 @@ MigrationBackup/
 
 # Ionide (cross platform F# VS Code tools) working folder
 .ionide/
+
+# Test .env file
+SDK_dotnet.Tests/.env
+SDK_dotnet.Tests/.secrets
+SDK_dotnet.Tests/appsettings.dev.json
