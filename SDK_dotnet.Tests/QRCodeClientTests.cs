@@ -1,71 +1,155 @@
-using System.Threading.Tasks;
 using Gluwa.SDK_dotnet.Clients;
 using Gluwa.SDK_dotnet.Models;
+using Gluwa.SDK_dotnet.Tests;
+using Newtonsoft.Json;
 using NUnit.Framework;
-using SDK_dotnet.Tests.Helpers;
-using Assert = NUnit.Framework.Assert;
+using QRCodeDecoderLibrary;
+using System;
+using System.Collections.Generic;
+using System.Drawing;
+using System.IO;
+using System.Threading.Tasks;
 
-namespace SDK_dotnet.Tests
+namespace QRCodeClientTests
 {
-    [TestFixture]
+    [TestFixture("Sandbox")]
+    //[TestFixture("Production")]
     public class QRCodeClientTests
     {
-        [TestCase(true)]
-        [TestCase(false)]
-        public async Task GetQRCodeTest(bool bSandbox)
+        private readonly string useEnvironment;
+
+        /// <summary>
+        /// From TestFixture
+        /// </summary>
+        /// <param name="platform"></param>
+        public QRCodeClientTests(string useEnvironment)
         {
-            QRCodeClient qRCodeClient = new QRCodeClient(bSandbox);
-
-            QRCodeRequest request = new QRCodeRequest();
-            
-            if (bSandbox)
-            {
-                request.ApiKey = ConfigurationHelper.GetByKey("sandboxApiKey");
-                request.Secret = ConfigurationHelper.GetByKey("sandboxApiSecret");
-            }
-            else
-            {
-                request.ApiKey = ConfigurationHelper.GetByKey("apiKey");
-                request.Secret = ConfigurationHelper.GetByKey("apiSecret");
-            }
-            request.Address = ConfigurationHelper.GetByKey("address");
-            request.PrivateKey = ConfigurationHelper.GetByKey("privateKey");
-            request.Currency = EPaymentCurrency.sNGNG;
-            request.Amount = "1000";
-
-            var response = await qRCodeClient.GetPaymentQRCodeAsync(request);
-
-            Assert.IsTrue(response.IsSuccess);
-            Assert.IsFalse(response.IsFailure);
+            this.useEnvironment = useEnvironment;
         }
 
-        [TestCase(true)]
-        [TestCase(false)]
-        public async Task GetQRCodePayLoadTest(bool bSandbox)
+        [SetUp]
+        public void Setup()
         {
-            QRCodeClient qRCodeClient = new QRCodeClient(bSandbox);
+            Shared.SetEnvironmentVariables(useEnvironment);
+        }
 
-            QRCodeRequest request = new QRCodeRequest();
+        [Test]
+        public async Task BasicQrCodeWithPayloadTest()
+        {
+            QRCodeClient qrCodeClient = new QRCodeClient(true);
 
-            if (bSandbox)
+            // Arange
+            string apiKey = Shared.API_KEY;
+            string secret = Shared.API_SECRET;
+            string address = Shared.SRC_ADR_sUSDCG;
+            string privateKey = Shared.SRC_PRIVATE_sUSDCG;
+            EPaymentCurrency currency = EPaymentCurrency.sUSDCG;
+            decimal amount = 54.893006m;
+            string format = null;                            // defaults to null. Returns base64 string. Optional.
+                                                             // if you want to receive an image file put ‘image/jpeg’ or ‘image/png’ instead.
+            string note = "Note";                            // default to null. Optional
+            string merchantOrderID = "Merchant Order ID";    // default to null. Optional
+            int expiry = 1800;                               // default to 1800. Optional”
+
+            // Call
+            var request = new QRCodeRequest()
             {
-                request.ApiKey = ConfigurationHelper.GetByKey("sandboxApiKey");
-                request.Secret = ConfigurationHelper.GetByKey("sandboxApiSecret");
-            }
-            else
+                ApiKey = apiKey,
+                Secret = secret,
+                Address = address,
+                PrivateKey = privateKey,
+                Currency = currency,
+                Amount = amount.ToString(),
+                Format = format,
+                Note = note,
+                MerchantOrderID = merchantOrderID,
+                Expiry = expiry
+            };
+            var result = await qrCodeClient.GetPaymentQRCodePayLoadAsync(request);
+
+            var fileName = Path.GetTempFileName();
+            File.WriteAllBytes(fileName, Convert.FromBase64String(result.Data.Base64.ToString()));
+
+            QRDecoder QRDecoder = new QRDecoder();
+            Bitmap QRCodeInputImage = new Bitmap(fileName);
+            byte[][] DataByteArray = QRDecoder.ImageDecoder(QRCodeInputImage);
+
+            // convert binary result to text string
+            string qrResult = QRDecoder.ByteArrayToStr(DataByteArray[0]);
+            var qrResultObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(qrResult);
+
+            TestContext.WriteLine(JsonConvert.SerializeObject(result));
+            TestContext.WriteLine(JsonConvert.SerializeObject(qrResultObject));
+
+            var qrAmount = Convert.ToDecimal(qrResultObject.Amount);
+            var qaFee = Convert.ToDecimal(qrResultObject.Fee);
+            var calcalatedTotal = qrAmount + qaFee;
+
+            // Assert
+            Assert.AreEqual(amount, calcalatedTotal);
+            Assert.AreEqual(note, qrResultObject.Note.ToString());
+            Assert.AreEqual(merchantOrderID, qrResultObject.MerchantOrderID.ToString());
+            Assert.AreEqual(useEnvironment, qrResultObject.Environment.ToString());
+            Assert.IsTrue(result.Data.Data != null);
+        }
+
+        [Test]
+        public async Task BasicQrCodeTest()
+        {
+            QRCodeClient qrCodeClient = new QRCodeClient(true);
+
+            // Arange
+            string apiKey = Shared.API_KEY;
+            string secret = Shared.API_SECRET;
+            string address = Shared.SRC_ADR_sUSDCG;
+            string privateKey = Shared.SRC_PRIVATE_sUSDCG;
+            EPaymentCurrency currency = EPaymentCurrency.sUSDCG;
+            decimal amount = 54.893006m;
+            string format = null;                            // defaults to null. Returns base64 string. Optional.
+                                                             // if you want to receive an image file put ‘image/jpeg’ or ‘image/png’ instead.
+            string note = "Note";                            // default to null. Optional
+            string merchantOrderID = "Merchant Order ID";    // default to null. Optional
+            int expiry = 1800;                               // default to 1800. Optional”
+
+            // Call
+            var request = new QRCodeRequest()
             {
-                request.ApiKey = ConfigurationHelper.GetByKey("apiKey");
-                request.Secret = ConfigurationHelper.GetByKey("apiSecret");
-            }
-            request.Address = ConfigurationHelper.GetByKey("address");
-            request.PrivateKey = ConfigurationHelper.GetByKey("privateKey");
-            request.Currency = EPaymentCurrency.sNGNG;
-            request.Amount = "1000";
+                ApiKey = apiKey,
+                Secret = secret,
+                Address = address,
+                PrivateKey = privateKey,
+                Currency = currency,
+                Amount = amount.ToString(),
+                Format = format,
+                Note = note,
+                MerchantOrderID = merchantOrderID,
+                Expiry = expiry
+            };
+            var result = await qrCodeClient.GetPaymentQRCodeAsync(request);
 
-            var response = await qRCodeClient.GetPaymentQRCodePayLoadAsync(request);
+            var fileName = Path.GetTempFileName();
+            File.WriteAllBytes(fileName, Convert.FromBase64String(result.Data));
 
-            Assert.IsTrue(response.IsSuccess);
-            Assert.IsFalse(response.IsFailure);
+            QRDecoder QRDecoder = new QRDecoder();
+            Bitmap QRCodeInputImage = new Bitmap(fileName);
+            byte[][] DataByteArray = QRDecoder.ImageDecoder(QRCodeInputImage);
+
+            // convert binary result to text string
+            string qrResult = QRDecoder.ByteArrayToStr(DataByteArray[0]);
+            var qrResultObject = Newtonsoft.Json.JsonConvert.DeserializeObject<dynamic>(qrResult);
+
+            TestContext.WriteLine(JsonConvert.SerializeObject(result));
+            TestContext.WriteLine(JsonConvert.SerializeObject(qrResultObject));
+
+            var qrAmount = Convert.ToDecimal(qrResultObject.Amount);
+            var qaFee = Convert.ToDecimal(qrResultObject.Fee);
+            var calcalatedTotal = qrAmount + qaFee;
+
+            // Assert
+            Assert.AreEqual(amount, calcalatedTotal);
+            Assert.AreEqual(note, qrResultObject.Note.ToString());
+            Assert.AreEqual(merchantOrderID, qrResultObject.MerchantOrderID.ToString());
+            Assert.AreEqual(useEnvironment, qrResultObject.Environment.ToString());
         }
     }
 }

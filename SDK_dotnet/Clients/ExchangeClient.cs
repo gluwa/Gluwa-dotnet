@@ -761,7 +761,7 @@ namespace Gluwa.SDK_dotnet.Clients
         /// Accept an exchange request.
         /// <param name="apiKey">Your apiKey.</param>
         /// <param name="apiSecret">Your apiSecretKey.</param>
-        /// <param name="address"/>The address that funds the source amount.</parm>
+        /// <param name="address"/>The address that funds the source amount.</param>
         /// <param name="privateKey">The privateKey of the sending address.</param>
         /// </summary>
         /// <returns></returns>
