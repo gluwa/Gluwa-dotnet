@@ -1,49 +1,30 @@
-﻿using System.ComponentModel.DataAnnotations;
-
-namespace Gluwa.SDK_dotnet.Models
+﻿namespace Gluwa.SDK_dotnet.Models
 {
-    internal sealed class QRCodeRequest
+    public class QRCodeRequest : QRCodeRequestBase
     {
         /// <summary>
-        /// Signature that verifies that the caller is the owner of the Target address.
+        /// Your API Key.
         /// </summary>
-        [Required]
-        public string Signature { get; set; }
+        public string ApiKey { get; set; }
 
         /// <summary>
-        /// Currency for the payment.
+        /// Your API Secret.
         /// </summary>
-        [Required]
-        public EPaymentCurrency? Currency { get; set; }
+        public string Secret { get; set; }
 
         /// <summary>
-        /// Address that will receive the payment.
+        /// Your public address.
         /// </summary>
-        [Required]
-        public string Target { get; set; }
+        public string Address { get; set; }
 
         /// <summary>
-        /// Payment amount. Fee will be deducted from this amount when payment request is made.
+        /// Your Private Key.
         /// </summary>
-        [Required]
-        public string Amount { get; set; }
+        public string PrivateKey { get; set; }
 
         /// <summary>
-        /// Identifier for the payment, used by the merchant user.
+        /// Desired image format, optional. Defaults to base64 string
         /// </summary>
-        [StringLength(60)]
-        public string MerchantOrderID { get; set; }
-
-        /// <summary>
-        /// Additional information, used by the merchant user.
-        /// </summary>
-        [StringLength(280)]
-        public string Note { get; set; }
-
-        /// <summary>
-        /// Time of expiry for the QR code in seconds. Payment request must be made with this QR code before this time.
-        /// </summary>
-        [Range(0, int.MaxValue)]
-        public int? Expiry { get; set; }
+        public string Format { get; set; }
     }
 }

@@ -2,10 +2,10 @@
 {
     public enum EPaymentCurrency
     {
-        USDG,
-        KRWG,
+        GCRE,
         NGNG,
-        sUSDCG,
-        sNGNG
+        USDCG,
+        sNGNG,
+        sUSDCG
     }
 }
