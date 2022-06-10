@@ -374,25 +374,25 @@ namespace Gluwa.SDK_dotnet.Clients
             if (currency == ECurrency.USDCG)
             {
                 messageHash = abiEncode.GetSha3ABIEncodedPacked(
-                new ABIValue("uint8", 4),// Domain 4 is for transfer
-                new ABIValue("uint256", chainID),
-                new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
-                new ABIValue("address", address),
-                new ABIValue("address", target),
-                new ABIValue("uint256", convertAmount),
-                new ABIValue("uint256", convertFee),
-                new ABIValue("uint256", BigInteger.Parse(nonce))
+                    new ABIValue("uint8", 4),// Domain 4 is for transfer
+                    new ABIValue("uint256", chainID),
+                    new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
+                    new ABIValue("address", address),
+                    new ABIValue("address", target),
+                    new ABIValue("uint256", convertAmount),
+                    new ABIValue("uint256", convertFee),
+                    new ABIValue("uint256", BigInteger.Parse(nonce))
                 );
             }
             else
             {
                 messageHash = abiEncode.GetSha3ABIEncodedPacked(
-                new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
-                new ABIValue("address", address),
-                new ABIValue("address", target),
-                new ABIValue("uint256", convertAmount),
-                new ABIValue("uint256", convertFee),
-                new ABIValue("uint256", BigInteger.Parse(nonce))
+                    new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
+                    new ABIValue("address", address),
+                    new ABIValue("address", target),
+                    new ABIValue("uint256", convertAmount),
+                    new ABIValue("uint256", convertFee),
+                    new ABIValue("uint256", BigInteger.Parse(nonce))
                 );
             }
 
