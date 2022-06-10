@@ -295,7 +295,7 @@ namespace Gluwa.SDK_dotnet.Clients
                 Idem = request.Idem,
                 PaymentID = request.PaymentID,
                 PaymentSig = request.PaymentSig
-            };            
+            };
 
             string json = bodyParams.ToJson();
             StringContent content = new StringContent(json, Encoding.UTF8, "application/json");
