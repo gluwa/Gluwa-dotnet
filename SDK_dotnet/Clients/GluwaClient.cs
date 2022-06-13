@@ -62,10 +62,7 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <response code="503">Service unavailable for the specified currency or temporarily.</response>
         public async Task<Result<BalanceResponse, ErrorResponse>> GetBalanceAsync(ECurrency currency, string address, bool includeUnspentOutputs = false)
         {
-            if (string.IsNullOrWhiteSpace(address))
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
+            validateParam(address);
 
             var result = new Result<BalanceResponse, ErrorResponse>();
             string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Addresses/{address}";
@@ -111,7 +108,7 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <param name="currency">Currency type.</param>
         /// <param name="address">Your public Address.</param>
         /// <param name="privateKey">Your Private Key.</param>
-        /// <param name="limit">Number of transactions to include in the result. optional. Defaults to 100.</param> 
+        /// <param name="limit">Number of transactions to include in the result. optional. Defaults to 100.</param>
         /// <param name="status">Filter by transaction status. Optional. Defaults to Confimred.</param>
         /// <param name="offset">Number of transactions to skip; used for pagination. Optional. Default to 0.</param>
         /// <response code="200">List of transactions associated with the address.</response>
@@ -127,14 +124,9 @@ namespace Gluwa.SDK_dotnet.Clients
            ETransactionStatusFilter status = ETransactionStatusFilter.Confirmed,
            uint offset = 0)
         {
-            if (string.IsNullOrWhiteSpace(address))
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-            else if (string.IsNullOrWhiteSpace(privateKey))
-            {
-                throw new ArgumentNullException(nameof(privateKey));
-            }
+            validateParam(address);
+
+            validateParam(privateKey);
 
             var result = new Result<List<TransactionResponse>, ErrorResponse>();
             string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Addresses/{address}/Transactions";
@@ -158,7 +150,6 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 using (HttpClient httpClient = new HttpClient())
                 {
-
                     httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, GluwaService.GetAddressSignature(privateKey, currency, mEnv));
 
                     using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
@@ -200,14 +191,9 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <response code="503">Service unavailable.</response>
         public async Task<Result<TransactionResponse, ErrorResponse>> GetTransactionDetailsAsync(ECurrency currency, string privateKey, string txnHash)
         {
-            if (string.IsNullOrWhiteSpace(privateKey))
-            {
-                throw new ArgumentNullException(nameof(privateKey));
-            }
-            else if (string.IsNullOrWhiteSpace(txnHash))
-            {
-                throw new ArgumentNullException(nameof(txnHash));
-            }
+            validateParam(privateKey);
+
+            validateParam(txnHash);
 
             var result = new Result<TransactionResponse, ErrorResponse>();
             string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Transactions/{txnHash}";
@@ -216,7 +202,6 @@ namespace Gluwa.SDK_dotnet.Clients
             {
                 using (HttpClient httpClient = new HttpClient())
                 {
-
                     httpClient.DefaultRequestHeaders.Add(X_REQUEST_SIGNATURE, GluwaService.GetAddressSignature(privateKey, currency, mEnv));
 
                     using (HttpResponseMessage response = await httpClient.GetAsync(requestUri))
@@ -264,47 +249,14 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <response code="409">A transaction with the same transaction hash, payment ID, or idem already exists.</response>
         /// <response code="500">Server error.</response>
         /// <response code="503">Service unavailable.</response>
-        public async Task<Result<bool, ErrorResponse>> CreateTransactionAsync(
-            ECurrency currency,
-            string address,
-            string privateKey,
-            string amount,
-            string target,
-            string merchantOrderID = null,
-            string note = null,
-            string nonce = null,
-            Guid? idem = null,
-            Guid? paymentID = null,
-            string paymentSig = null)
+        public async Task<Result<bool, ErrorResponse>> CreateTransactionAsync(CreateTransactionRequest request)
         {
-            if (string.IsNullOrWhiteSpace(address))
-            {
-                throw new ArgumentNullException(nameof(address));
-            }
-            else if (string.IsNullOrWhiteSpace(privateKey))
-            {
-                throw new ArgumentNullException(nameof(privateKey));
-            }
-            else if (string.IsNullOrWhiteSpace(amount))
-            {
-                throw new ArgumentNullException(nameof(amount));
-            }
-            else if (string.IsNullOrWhiteSpace(target))
-            {
-                throw new ArgumentNullException(nameof(target));
-            }
-            else if (paymentID != null)
-            {
-                if (string.IsNullOrWhiteSpace(paymentSig))
-                {
-                    throw new ArgumentException(nameof(paymentSig));
-                }
-            }
+            validateParams(request);
 
             var result = new Result<bool, ErrorResponse>();
             var requestUri = $"{mEnv.BaseUrl}/v1/Transactions";
 
-            Result<FeeResponse, ErrorResponse> getFee = await getFeeAsync(currency);
+            Result<FeeResponse, ErrorResponse> getFee = await getFeeAsync(request.Currency, request.Amount);
             if (getFee.IsFailure)
             {
                 result.Error = getFee.Error;
@@ -315,34 +267,34 @@ namespace Gluwa.SDK_dotnet.Clients
             string fee = getFee.Data.MinimumFee;
             string signature = null;
 
-            if (currency == ECurrency.BTC)
+            if (request.Currency == ECurrency.BTC)
             {
-                signature = await getBtcTransactionSignatureAsync(currency, address, amount, fee, target, privateKey);
+                signature = await getBtcTransactionSignatureAsync(request.Currency, request.Address, request.Amount, fee, request.Target, request.PrivateKey);
             }
             else
             {
-                if (nonce == null)
+                if (request.Nonce == null)
                 {
-                    nonce = GluwaService.GetNonceString();
+                    request.Nonce = GluwaService.GetNonceString();
                 }
 
-                signature = getGluwacoinTransactionSignature(currency, amount, fee, nonce, address, target, privateKey);
+                signature = getGluwacoinTransactionSignature(request.Currency, request.Amount, fee, request.Nonce, request.Address, request.Target, request.PrivateKey);
             }
 
             TransactionRequest bodyParams = new TransactionRequest
             {
                 Signature = signature,
-                Currency = currency,
-                Target = target,
-                Amount = amount,
+                Currency = request.Currency,
+                Target = request.Target,
+                Amount = request.Amount,
                 Fee = getFee.Data.MinimumFee,
-                Source = address,
-                Nonce = nonce,
-                MerchantOrderID = merchantOrderID,
-                Note = note,
-                Idem = idem,
-                PaymentID = paymentID,
-                PaymentSig = paymentSig
+                Source = request.Address,
+                Nonce = request.Nonce,
+                MerchantOrderID = request.MerchantOrderID,
+                Note = request.Note,
+                Idem = request.Idem,
+                PaymentID = request.PaymentID,
+                PaymentSig = request.PaymentSig
             };
 
             string json = bodyParams.ToJson();
@@ -373,6 +325,30 @@ namespace Gluwa.SDK_dotnet.Clients
             return result;
         }
 
+        private void validateParam(string param)
+        {
+            if (string.IsNullOrWhiteSpace(param))
+            {
+                throw new ArgumentException(nameof(param));
+            }
+        }
+
+        private void validateParams(CreateTransactionRequest request)
+        {
+            validateParam(request.Address);
+
+            validateParam(request.PrivateKey);
+
+            validateParam(request.Amount);
+
+            validateParam(request.Target);
+
+            if (request.PaymentID != null && string.IsNullOrWhiteSpace(request.PaymentSig))
+            {
+                throw new ArgumentException(nameof(request.PaymentSig));
+            }
+        }
+
         private string getGluwacoinTransactionSignature(ECurrency currency, string amount, string fee, string nonce, string address, string target, string privateKey)
         {
             BigInteger convertAmount = BigInteger.Zero;
@@ -380,32 +356,45 @@ namespace Gluwa.SDK_dotnet.Clients
 
             if (currency.IsGluwacoinSideChainCurrency())
             {
-                if(currency == ECurrency.sNGNG)
-                {
-                    convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount, currency);
-                    convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee.ToString(), currency);
-                }
-                else if (currency == ECurrency.sUSDCG)
-                {
-                    convertAmount = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount, currency);
-                    convertFee = GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee.ToString(), currency);
-                }
+                convertAmount += GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(amount, currency);
+                convertFee += GluwacoinConverter.ConvertToGluwacoinSideChainBigInteger(fee.ToString(), currency);
             }
             else
             {
-                convertAmount = GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
-                convertFee = GluwacoinConverter.ConvertToGluwacoinBigInteger(fee.ToString());
+                convertAmount += GluwacoinConverter.ConvertToGluwacoinBigInteger(amount);
+                convertFee += GluwacoinConverter.ConvertToGluwacoinBigInteger(fee.ToString());
             }
 
             ABIEncode abiEncode = new ABIEncode();
-            byte[] messageHash = abiEncode.GetSha3ABIEncodedPacked(
-                new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
-                new ABIValue("address", address),
-                new ABIValue("address", target),
-                new ABIValue("uint256", convertAmount),
-                new ABIValue("uint256", convertFee),
-                new ABIValue("uint256", BigInteger.Parse(nonce))
+            byte[] messageHash;
+
+            var chainID = mEnv == Environment.Sandbox ? 4 : 1; // 4 is Rinkeby Testnet | 1 is Mainnet
+
+            // USDCG and sSGDG have different signature requirements
+            if (currency == ECurrency.USDCG)
+            {
+                messageHash = abiEncode.GetSha3ABIEncodedPacked(
+                    new ABIValue("uint8", 4),// Domain 4 is for transfer
+                    new ABIValue("uint256", chainID),
+                    new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
+                    new ABIValue("address", address),
+                    new ABIValue("address", target),
+                    new ABIValue("uint256", convertAmount),
+                    new ABIValue("uint256", convertFee),
+                    new ABIValue("uint256", BigInteger.Parse(nonce))
                 );
+            }
+            else
+            {
+                messageHash = abiEncode.GetSha3ABIEncodedPacked(
+                    new ABIValue("address", GluwaService.getGluwacoinContractAddress(currency, mEnv)),
+                    new ABIValue("address", address),
+                    new ABIValue("address", target),
+                    new ABIValue("uint256", convertAmount),
+                    new ABIValue("uint256", convertFee),
+                    new ABIValue("uint256", BigInteger.Parse(nonce))
+                );
+            }
 
             EthereumMessageSigner signer = new EthereumMessageSigner();
             string signature = signer.Sign(messageHash, privateKey);
@@ -476,10 +465,10 @@ namespace Gluwa.SDK_dotnet.Clients
             return signature;
         }
 
-        private async Task<Result<FeeResponse, ErrorResponse>> getFeeAsync(ECurrency currency)
+        private async Task<Result<FeeResponse, ErrorResponse>> getFeeAsync(ECurrency currency, string amount)
         {
             var result = new Result<FeeResponse, ErrorResponse>();
-            string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Fee";
+            string requestUri = $"{mEnv.BaseUrl}/v1/{currency}/Fee?amount={amount}";
 
             try
             {

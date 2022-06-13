@@ -2,13 +2,9 @@
 {
     public enum EConversion
     {
-        UsdgKrwg,
-        KrwgUsdg,
-        BtcUsdg,
-        UsdgBtc,
-        BtcKrwg,
-        KrwgBtc,
         BtcsUsdcg,
         sUsdcgBtc,
+        BtcUsdcg,
+        UsdcgBtc,
     }
 }
