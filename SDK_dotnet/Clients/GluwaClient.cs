@@ -368,7 +368,7 @@ namespace Gluwa.SDK_dotnet.Clients
             ABIEncode abiEncode = new ABIEncode();
             byte[] messageHash;
 
-            var chainID = mEnv == Environment.Sandbox ? 4 : 1; // 4 is Rinkeby Testnet | 1 is Mainnet
+            var chainID = mEnv == Environment.Sandbox ? 5 : 1; // 5 is Goerli Testnet | 1 is Mainnet
 
             // USDCG and sSGDG have different signature requirements
             if (currency == ECurrency.USDCG)
