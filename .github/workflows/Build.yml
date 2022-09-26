@@ -1,7 +1,7 @@
 name: CI + Sonarcloud
 on:
   push:
-    branches: [ dev, master, feature/QA-119 ]
+    branches: [ dev, master, feature/** ]
   pull_request:
     branches: [ dev, master ]
     types: [opened, synchronize, reopened]
