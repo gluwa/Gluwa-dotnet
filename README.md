@@ -1,4 +1,7 @@
 # Gluwa .NET SDK
+
+**Dear users, Sandbox environment has been deprecated, please update your code to avoid any further errors**
+
 ![Gluwa logo](https://user-images.githubusercontent.com/83000144/172954781-02cb774a-2dbc-42d6-832e-3ec387491d37.gif)
 
 .NET SDK for Gluwa.
