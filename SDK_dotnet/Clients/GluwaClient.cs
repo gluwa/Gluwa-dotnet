@@ -27,13 +27,13 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <summary>
         /// The constructor
         /// </summary>
-        /// <param name="bSandbox">Set to 'true' if using sandbox mode. Otherwise, 'false'</param>
+        /// <param name="bTest">Set to 'true' if using test mode. Otherwise, 'false'</param>
         public GluwaClient(
-            bool bSandbox = false)
+            bool bTest = false)
         {
-            if (bSandbox)
+            if (bTest)
             {
-                mEnv = Environment.Sandbox;
+                mEnv = Environment.Test;
             }
             else
             {
@@ -368,7 +368,7 @@ namespace Gluwa.SDK_dotnet.Clients
             ABIEncode abiEncode = new ABIEncode();
             byte[] messageHash;
 
-            var chainID = mEnv == Environment.Sandbox ? 5 : 1; // 5 is Goerli Testnet | 1 is Mainnet
+            var chainID = mEnv == Environment.Test ? 5 : 1; // 5 is Goerli Testnet | 1 is Mainnet
 
             // USDCG and sSGDG have different signature requirements
             if (currency == ECurrency.USDCG)

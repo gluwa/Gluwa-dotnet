@@ -42,7 +42,6 @@ namespace Gluwa.SDK_dotnet.Tests
         public static string DEFAULT_PRIVATE;
         
         // ENV
-        public static string BASE_URL_SANDBOX = "https://sandbox.api.gluwa.com";
         public static string BASE_URL_TEST = "https://api-test.gluwa.com/";
         public static string BASE_URL_PROD = "https://api.gluwa.com/";
         public static string WEBHOOK_URL = "https://gwebhookreceiver-test.azurewebsites.net/";
@@ -138,7 +137,7 @@ namespace Gluwa.SDK_dotnet.Tests
 
                 default:
                     BASE_ENV = true;
-                    BASE_URL = BASE_URL_SANDBOX;
+                    BASE_URL = BASE_URL_TEST;
                     API_KEY = config["API_KEY_SANDBOX"];
                     API_SECRET = config["API_SECRET_SANDBOX"];
                     TxID_sNGNG = TxID_sNGNG_SANDBOX;

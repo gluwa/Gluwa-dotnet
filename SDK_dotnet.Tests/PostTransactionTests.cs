@@ -13,7 +13,7 @@ using TestContext = NUnit.Framework.TestContext;
 
 namespace GluwaClientTests
 {
-    [TestFixture("Sandbox")]
+    [TestFixture("Test")]
     [TestFixture("Production")]
     class PostTransactionTests
     {

@@ -12,7 +12,7 @@ using System.Threading.Tasks;
 
 namespace QRCodeClientTests
 {
-    [TestFixture("Sandbox")]
+    [TestFixture("Test")]
     //[TestFixture("Production")]
     public class QRCodeClientTests
     {

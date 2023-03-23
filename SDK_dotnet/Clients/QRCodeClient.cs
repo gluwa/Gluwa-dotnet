@@ -20,10 +20,10 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <summary>
         /// The constructor.
         /// </summary>
-        /// <param name="bSandbox">Set to 'true' if using sandbox mode. Otherwise, 'false'</param>
-        public QRCodeClient(bool bSandbox = false)
+        /// <param name="bTest">Set to 'true' if using test mode. Otherwise, 'false'</param>
+        public QRCodeClient(bool bTest = false)
         {
-            mEnv = bSandbox ? Environment.Sandbox : Environment.Production;
+            mEnv = bTest ? Environment.Test : Environment.Production;
         }
 
         /// <summary>

@@ -32,13 +32,13 @@ namespace Gluwa.SDK_dotnet.Clients
         /// <summary>
         /// The constructor
         /// </summary>
-        /// <param name="bSandbox">Set to 'true' if using sandbox mode. Otherwise, 'false'</param>
+        /// <param name="bTest">Set to 'true' if using test mode. Otherwise, 'false'</param>
         public ExchangeClient(
-            bool bSandbox = false)
+            bool bTest = false)
         {
-            if (bSandbox)
+            if (bTest)
             {
-                mEnv = Environment.Sandbox;
+                mEnv = Environment.Test;
             }
             else
             {

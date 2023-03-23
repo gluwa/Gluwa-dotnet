@@ -21,16 +21,16 @@ namespace Gluwa.SDK_dotnet
             }
         }
 
-        public static Environment Sandbox
+        public static Environment Test
         {
             get
             {
                 Environment env = new Environment(
-                    baseUrl: Constants.GLUWA_SANDBOX_API_BASE_URL,
-                    ngngContractAddress: Constants.GLUWACOIN_SANDBOX_NGNG_CONTRACT_ADDRESS,
-                    sUsdcgContractAddress: Constants.GLUWACOIN_SANDBOX_SUSDCG_CONTRACT_ADDRESS,
-                    usdcgContractAddress: Constants.GLUWACOIN_SANDBOX_USDCG_CONTRACT_ADDRESS,
-                    sNgngContractAddress: Constants.GLUWACOIN_SANDBOX_SNGNG_CONTRACT_ADDRESS,
+                    baseUrl: Constants.GLUWA_TEST_API_BASE_URL,
+                    ngngContractAddress: Constants.GLUWACOIN_TEST_NGNG_CONTRACT_ADDRESS,
+                    sUsdcgContractAddress: Constants.GLUWACOIN_TEST_SUSDCG_CONTRACT_ADDRESS,
+                    usdcgContractAddress: Constants.GLUWACOIN_TEST_USDCG_CONTRACT_ADDRESS,
+                    sNgngContractAddress: Constants.GLUWACOIN_TEST_SNGNG_CONTRACT_ADDRESS,
                     network: Network.TestNet);
 
                 return env;
