@@ -10,7 +10,7 @@ using TestContext = NUnit.Framework.TestContext;
 
 namespace ExchangeClientTests
 {
-    [TestFixture("Sandbox")]
+    [TestFixture("Test")]
     //[TestFixture("Production")]
     class GetPendingQuoteTests
     {
